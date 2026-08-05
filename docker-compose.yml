@@ -1,0 +1,112 @@
+services:
+  # ─── PostgreSQL ─────────────────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: rdtii_postgres
+    environment:
+      POSTGRES_USER: rdtii_user
+      POSTGRES_PASSWORD: rdtii_pass
+      POSTGRES_DB: rdtii_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rdtii_user -d rdtii_db"]
+      interval: 10s
+      retries: 5
+
+  # ─── Redis ──────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: rdtii_redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      retries: 5
+
+  # ─── FastAPI Application ────────────────────────────────────────────────────
+  api:
+    build: .
+    container_name: rdtii_api
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app/app --reload-exclude 'streamlit_app.py'
+    volumes:
+      - .:/app
+      - chroma_data:/app/chroma_db
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://rdtii_user:rdtii_pass@db:5432/rdtii_db
+      - DATABASE_URL_SYNC=postgresql://rdtii_user:rdtii_pass@db:5432/rdtii_db
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ─── Celery Worker ──────────────────────────────────────────────────────────
+  worker:
+    build: .
+    container_name: rdtii_worker
+    restart: unless-stopped
+    command: celery -A app.workers.celery_app worker --loglevel=info --concurrency=1
+    volumes:
+      - .:/app
+      - chroma_data:/app/chroma_db
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://rdtii_user:rdtii_pass@db:5432/rdtii_db
+      - DATABASE_URL_SYNC=postgresql://rdtii_user:rdtii_pass@db:5432/rdtii_db
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ─── Celery Flower (monitoring) ─────────────────────────────────────────────
+  flower:
+    build: .
+    container_name: rdtii_flower
+    command: celery -A app.workers.celery_app flower --port=5555
+    ports:
+      - "5555:5555"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+
+  # ─── Streamlit Audit UI ─────────────────────────────────────────────────────
+  streamlit:
+    build:
+      context: .
+      dockerfile: Dockerfile.streamlit
+    container_name: rdtii_streamlit
+    ports:
+      - "8501:8501"
+    environment:
+      - API_BASE_URL=http://api:8000
+      - EXPORT_BASE_URL=http://localhost:8000
+      - ARROW_DEFAULT_MEMORY_POOL=system
+    env_file:
+      - .env
+    depends_on:
+      - api
+
+
+
+volumes:
+  postgres_data:
+  chroma_data:

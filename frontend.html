@@ -1,0 +1,2194 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+<title>RDTII 2.1 — Audit Dashboard</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+/* ── Theme tokens ─────────────────────────────────────── */
+:root {
+  --bg:         #f5f5f4;
+  --surface:    #ffffff;
+  --surface2:   #f9f9f8;
+  --border:     #e8e6e1;
+  --border-med: #d6d3cc;
+  --text:       #1a1916;
+  --text-2:     #6b6860;
+  --text-3:     #9c9a96;
+  --accent:     #e86c3a;
+  --accent-bg:  #fdf0ea;
+  --blue:       #2563eb;
+  --blue-bg:    #eff4ff;
+  --blue-bd:    #bfdbfe;
+  --green:      #16a34a;
+  --green-bg:   #f0fdf4;
+  --green-bd:   #bbf7d0;
+  --amber:      #d97706;
+  --amber-bg:   #fffbeb;
+  --amber-bd:   #fde68a;
+  --red:        #dc2626;
+  --red-bg:     #fef2f2;
+  --red-bd:     #fecaca;
+  --purple:     #7c3aed;
+  --purple-bg:  #f5f3ff;
+  --purple-bd:  #ddd6fe;
+  --mono:       'JetBrains Mono','Fira Mono',monospace;
+  --log-bg:     #fafaf9;
+}
+
+[data-theme="dark"] {
+  --bg:         #0f1117;
+  --surface:    #161b27;
+  --surface2:   #1c2333;
+  --border:     rgba(255,255,255,0.07);
+  --border-med: rgba(255,255,255,0.13);
+  --text:       #e4e8f0;
+  --text-2:     #8b929e;
+  --text-3:     #5a6270;
+  --accent:     #f07848;
+  --accent-bg:  rgba(240,120,72,0.12);
+  --blue:       #60a5fa;
+  --blue-bg:    rgba(96,165,250,0.1);
+  --blue-bd:    rgba(96,165,250,0.25);
+  --green:      #34d399;
+  --green-bg:   rgba(52,211,153,0.1);
+  --green-bd:   rgba(52,211,153,0.25);
+  --amber:      #fbbf24;
+  --amber-bg:   rgba(251,191,36,0.1);
+  --amber-bd:   rgba(251,191,36,0.25);
+  --red:        #f87171;
+  --red-bg:     rgba(248,113,113,0.1);
+  --red-bd:     rgba(248,113,113,0.25);
+  --purple:     #a78bfa;
+  --purple-bg:  rgba(167,139,250,0.1);
+  --purple-bd:  rgba(167,139,250,0.25);
+  --log-bg:     #0d1117;
+}
+
+/* ── Reset ───────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13.5px;
+  line-height: 1.55;
+  display: flex;
+  transition: background 0.2s, color 0.2s;
+}
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-med); border-radius: 99px; }
+
+/* ── Sidebar ─────────────────────────────────────────── */
+.sidebar {
+  width: 224px;
+  min-width: 224px;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 18px 16px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.logo-mark {
+  width: 30px; height: 30px;
+  background: var(--accent);
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.logo-mark i { font-size: 16px; color: #fff; }
+.logo-name { font-size: 14.5px; font-weight: 600; letter-spacing: -0.01em; color: var(--text); }
+.logo-tag  { font-size: 10px; color: var(--text-3); margin-top: 1px; letter-spacing: 0.03em; }
+
+.sidebar-search {
+  margin: 12px 10px 6px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 7px 10px;
+  color: var(--text-3);
+  font-size: 12.5px;
+  cursor: text;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.sidebar-search i { font-size: 15px; flex-shrink: 0; }
+.sidebar-search-text { flex: 1; }
+.sidebar-kbd {
+  font-size: 10px;
+  background: var(--border);
+  color: var(--text-3);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+.nav-section { padding: 14px 10px 4px; }
+.nav-section-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  color: var(--text-3);
+  text-transform: uppercase;
+  padding: 0 6px;
+  margin-bottom: 4px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 8px;
+  border-radius: 7px;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+  margin-bottom: 1px;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+}
+
+.nav-item:hover { background: var(--bg); color: var(--text); }
+.nav-item.active { background: var(--accent-bg); color: var(--accent); }
+.nav-item i { font-size: 16px; flex-shrink: 0; }
+.nav-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-left: 2px; }
+
+.sidebar-footer {
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  padding: 12px 14px;
+}
+
+/* ── Main wrap ───────────────────────────────────────── */
+.main-wrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+/* ── Topbar ──────────────────────────────────────────── */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.page-title { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; color: var(--text); }
+.page-sub   { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+
+/* ── Buttons ─────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  border-radius: 7px;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  transition: all 0.15s;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.btn i { font-size: 14px; }
+.btn-ghost { background: transparent; color: var(--text-2); border: 1px solid var(--border-med); }
+.btn-ghost:hover { background: var(--bg); color: var(--text); }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { opacity: 0.9; }
+.btn-sm { padding: 4px 10px; font-size: 11.5px; }
+.btn-danger { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-bd); }
+.btn-danger:hover { opacity: 0.85; }
+
+/* ── Status chip ─────────────────────────────────────── */
+.status-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.status-dot { width: 6px; height: 6px; border-radius: 50%; animation: blink 2s infinite; }
+@keyframes blink { 0%,100% { opacity:1; } 50% { opacity:.3; } }
+
+/* ── Dark mode toggle ────────────────────────────────── */
+.theme-btn {
+  width: 32px; height: 32px;
+  border-radius: 7px;
+  border: 1px solid var(--border-med);
+  background: transparent;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  color: var(--text-2);
+  font-size: 16px;
+  transition: all 0.15s;
+}
+.theme-btn:hover { background: var(--bg); color: var(--text); }
+
+/* ── Toggle switch ───────────────────────────────────── */
+.toggle-row { display: flex; align-items: center; gap: 7px; }
+.toggle-label { font-size: 12px; color: var(--text-2); }
+.toggle {
+  width: 32px; height: 17px;
+  border-radius: 99px;
+  background: var(--border-med);
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s;
+  border: none;
+  flex-shrink: 0;
+}
+.toggle.on { background: var(--accent); }
+.toggle::after {
+  content: '';
+  width: 11px; height: 11px;
+  background: #fff;
+  border-radius: 50%;
+  position: absolute;
+  top: 3px; left: 3px;
+  transition: left 0.2s;
+}
+.toggle.on::after { left: 18px; }
+
+/* ── Page content ────────────────────────────────────── */
+.page-content { padding: 28px 28px 48px; }
+
+/* ── Page system ──────────────────────────────────────── */
+.page { display: none; flex-direction: column; gap: 32px; }
+.page:first-of-type { display: flex; }
+
+/* ── Section heading ─────────────────────────────────── */
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.section-title { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; color: var(--text); }
+.section-sub   { font-size: 11.5px; color: var(--text-3); margin-top: 2px; }
+
+/* ── Stat cards ──────────────────────────────────────── */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 0.15s, background 0.2s;
+  animation: fadeUp 0.35s ease both;
+}
+.stat-card:hover { border-color: var(--border-med); }
+
+.stat-icon-row { display: flex; align-items: center; justify-content: space-between; }
+.stat-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+}
+.stat-change { font-size: 11.5px; font-weight: 500; display: flex; align-items: center; gap: 3px; }
+.stat-label  { font-size: 11.5px; color: var(--text-3); font-weight: 500; letter-spacing: 0.02em; }
+.stat-value  { font-size: 28px; font-weight: 600; letter-spacing: -0.03em; color: var(--text); line-height: 1; }
+
+/* ── Card ────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 22px 24px;
+  transition: border-color 0.15s, background 0.2s;
+  animation: fadeUp 0.35s ease both;
+}
+.card:hover { border-color: var(--border-med); }
+.card-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.card-desc  { font-size: 12.5px; color: var(--text-3); margin-top: 3px; line-height: 1.55; }
+
+/* ── Pills ───────────────────────────────────────────── */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  border-radius: 99px;
+  font-size: 11.5px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.pill i { font-size: 12px; }
+.pill-green  { background: var(--green-bg);  color: var(--green);  border: 1px solid var(--green-bd); }
+.pill-red    { background: var(--red-bg);    color: var(--red);    border: 1px solid var(--red-bd); }
+.pill-amber  { background: var(--amber-bg);  color: var(--amber);  border: 1px solid var(--amber-bd); }
+.pill-blue   { background: var(--blue-bg);   color: var(--blue);   border: 1px solid var(--blue-bd); }
+.pill-purple { background: var(--purple-bg); color: var(--purple); border: 1px solid var(--purple-bd); }
+.pill-gray   { background: var(--bg);        color: var(--text-2); border: 1px solid var(--border); }
+
+/* ── Form ────────────────────────────────────────────── */
+.form-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; align-items: end; margin-top: 18px; }
+.form-row-actions { display: flex; align-items: end; gap: 10px; }
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-3);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.field select, .field select[multiple] {
+  background: var(--bg);
+  border: 1px solid var(--border-med);
+  border-radius: 7px;
+  color: var(--text);
+  padding: 7px 28px 7px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.2s;
+}
+.field select:not([multiple]) {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239c9a96' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding: 7px 28px 7px 10px;
+}
+/* ── Checkbox labels ────────────────────────────────── */
+.cb-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12.5px; padding: 4px 8px; border-radius: 5px; cursor: pointer;
+  transition: background 0.1s;
+}
+.cb-label:hover { background: var(--surface2); }
+.cb-label input[type="checkbox"] { accent-color: var(--accent); }
+.field select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(232,108,58,0.12); }
+
+/* ── 2-col grid ──────────────────────────────────────── */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* ── Services grid ───────────────────────────────────── */
+.svc-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-top: 14px; }
+.svc-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 13px 15px;
+  transition: border-color 0.15s, background 0.2s;
+}
+.svc-card:hover { border-color: var(--border-med); }
+.svc-name { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-3); margin-bottom: 8px; }
+.svc-val  { font-size: 14px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 7px; }
+
+/* ── LLM chips ───────────────────────────────────────── */
+.llm-grid { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 16px; }
+.llm-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-2);
+  transition: background 0.2s, border-color 0.2s;
+}
+.llm-chip i { font-size: 13px; }
+.llm-chip.ok   { background: var(--green-bg);  border-color: var(--green-bd); color: var(--green); }
+.llm-chip.fail { background: var(--red-bg);    border-color: var(--red-bd);   color: var(--red); }
+.llm-chip.off  { color: var(--text-3); }
+
+/* ── Tabs ────────────────────────────────────────────── */
+.tabs {
+  display: flex; gap: 2px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 3px;
+  transition: background 0.2s;
+}
+.tab {
+  padding: 4px 13px;
+  border-radius: 5px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+}
+.tab.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.tab:hover:not(.active) { color: var(--text-2); }
+
+/* ── Runs list ───────────────────────────────────────── */
+.runs-list { display: flex; flex-direction: column; gap: 8px; }
+#runs-summary { display: grid; grid-template-columns: repeat(5,1fr); gap: 12px; margin-bottom: 18px; }
+
+.run-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.15s, background 0.2s;
+  animation: fadeUp 0.35s ease both;
+}
+.run-card:hover { border-color: var(--border-med); }
+
+.run-header {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 13px 18px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.run-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: var(--text-2);
+  font-size: 16px;
+  transition: background 0.2s;
+}
+
+.run-meta { flex: 1; min-width: 0; }
+.run-country { font-size: 13.5px; font-weight: 600; color: var(--text); }
+.run-id { font-size: 11px; color: var(--text-3); font-family: var(--mono); margin-top: 1px; }
+
+.run-progress-col { display: flex; flex-direction: column; gap: 4px; width: 110px; flex-shrink: 0; }
+.prog-bg { height: 3px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 99px; transition: width 0.6s ease; }
+.prog-label { font-size: 10.5px; color: var(--text-3); text-align: right; }
+
+.run-time { font-size: 11px; color: var(--text-3); flex-shrink: 0; }
+
+.chevron { font-size: 16px; color: var(--text-3); flex-shrink: 0; transition: transform 0.2s; }
+.run-card.open .chevron { transform: rotate(180deg); }
+
+.run-body { display: none; padding: 0 18px 18px; border-top: 1px solid var(--border); }
+.run-card.open .run-body { display: block; }
+
+.run-detail-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin: 16px 0 12px; }
+.dl { font-size: 10.5px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; margin-bottom: 4px; }
+.dv { font-size: 13.5px; font-weight: 500; color: var(--text); }
+
+/* ── Log terminal ────────────────────────────────────── */
+.log-header { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; margin: 12px 0 6px; display: flex; align-items: center; gap: 5px; }
+.log-header i { font-size: 13px; }
+
+.log-box {
+  background: var(--log-bg);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 10px 13px;
+  max-height: 190px;
+  overflow-y: auto;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  line-height: 1.85;
+  transition: background 0.2s;
+}
+.ll { display: flex; gap: 9px; }
+.ll-ts    { color: var(--text-3); flex-shrink: 0; }
+.ll-icon  { flex-shrink: 0; font-size: 13px; }
+.ll-agent { color: var(--blue); flex-shrink: 0; font-weight: 500; }
+.ll-ind   { color: var(--amber); flex-shrink: 0; }
+.ll-msg   { color: var(--text-2); }
+
+/* ── Data table ──────────────────────────────────────── */
+.tbl-wrap { margin-top: 14px; overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
+table.dt { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+table.dt th {
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+}
+table.dt td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-2);
+  vertical-align: middle;
+}
+table.dt tr:last-child td { border-bottom: none; }
+table.dt tr:hover td { background: var(--bg); }
+table.dt td:first-child { font-family: var(--mono); color: var(--accent); font-weight: 500; }
+
+/* ── Export row ──────────────────────────────────────── */
+.export-row { display: flex; align-items: center; gap: 8px; margin-top: 13px; }
+.export-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--blue);
+  background: var(--blue-bg);
+  border: 1px solid var(--blue-bd);
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+.export-link:hover { opacity: 0.8; }
+.export-link i { font-size: 13px; }
+
+/* ── Error box ───────────────────────────────────────── */
+.error-box {
+  background: var(--red-bg);
+  border: 1px solid var(--red-bd);
+  border-radius: 7px;
+  padding: 11px 14px;
+  color: var(--red);
+  font-size: 12.5px;
+  line-height: 1.65;
+  display: flex;
+  gap: 9px;
+}
+.error-box i { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+/* ── Info box ────────────────────────────────────────── */
+.info-box {
+  background: var(--blue-bg);
+  border: 1px solid var(--blue-bd);
+  border-radius: 7px;
+  padding: 11px 14px;
+  color: var(--blue);
+  font-size: 12.5px;
+  display: flex;
+  gap: 9px;
+  margin-top: 14px;
+}
+.info-box i { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+/* ── Progress striped (active) ───────────────────────── */
+@keyframes stripe { from { background-position: 0 0; } to { background-position: 20px 0; } }
+.prog-fill.active {
+  background: repeating-linear-gradient(-45deg, var(--accent) 0,var(--accent) 6px,rgba(255,255,255,0.25) 6px,rgba(255,255,255,0.25) 12px);
+  background-size: 20px 100%;
+  animation: stripe 0.8s linear infinite;
+}
+@keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+
+/* ── Overlay / loading ───────────────────────────────── */
+.loading-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+  padding: 40px;
+  color: var(--text-3);
+  font-size: 13px;
+}
+.spinner { font-size: 22px; animation: spin 1s linear infinite; color: var(--accent); }
+
+/* ── Footer ──────────────────────────────────────────── */
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 14px 28px;
+  font-size: 11.5px;
+  color: var(--text-3);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background 0.2s;
+}
+
+/* ── Animations ──────────────────────────────────────── */
+@keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width:1100px) {
+  .sidebar { display:none; }
+  .stats-grid { grid-template-columns:repeat(2,1fr); }
+  .svc-grid { grid-template-columns:repeat(2,1fr); }
+  .form-row { grid-template-columns:1fr 1fr; }
+}
+@media (max-width:640px) {
+  .stats-grid { grid-template-columns:1fr; }
+  .two-col { grid-template-columns:1fr; }
+  .form-row { grid-template-columns:1fr; }
+  .form-row-actions { justify-content: flex-start; }
+  .run-detail-grid { grid-template-columns:repeat(2,1fr); }
+  .page-content { padding:16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── Sidebar ─────────────────────────────────────────────── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark"><i class="ti ti-bolt"></i></div>
+    <div>
+      <div class="logo-name">RDTII 2.1</div>
+      <div class="logo-tag">Compliance Engine</div>
+    </div>
+  </div>
+
+  <div class="sidebar-search">
+    <i class="ti ti-search"></i>
+    <span class="sidebar-search-text">Search…</span>
+    <span class="sidebar-kbd">⌘K</span>
+  </div>
+
+  <div class="nav-section">
+    <button class="nav-item active" onclick="navigateTo('dashboard')"><i class="ti ti-layout-dashboard"></i> Dashboard</button>
+    <button class="nav-item" onclick="navigateTo('runs')"><i class="ti ti-activity"></i> All Runs</button>
+    <button class="nav-item" onclick="navigateTo('results')"><i class="ti ti-list-details"></i> All Results</button>
+    <button class="nav-item" onclick="navigateTo('indicators')"><i class="ti ti-list-tree"></i> Indicators</button>
+    <button class="nav-item" onclick="navigateTo('token')"><i class="ti ti-coins"></i> Token Burn</button>
+    <button class="nav-item" onclick="navigateTo('countries')"><i class="ti ti-world"></i> Countries</button>
+    <button class="nav-item" onclick="navigateTo('logs')"><i class="ti ti-terminal-2"></i> Live Logs</button>
+    <button class="nav-item" onclick="navigateTo('exports')"><i class="ti ti-file-export"></i> Exports</button>
+    <button class="nav-item" onclick="navigateTo('audit')"><i class="ti ti-eye-search"></i> Audit View</button>
+    <button class="nav-item" onclick="navigateTo('queue')"><i class="ti ti-flag"></i> Review Queue</button>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Pillars</div>
+    <button class="nav-item"><div class="nav-dot" style="background:#3b82f6"></div> Tariffs &amp; Trade</button>
+    <button class="nav-item"><div class="nav-dot" style="background:#10b981"></div> Cross-border Data</button>
+    <button class="nav-item"><div class="nav-dot" style="background:#f59e0b"></div> IP Rights</button>
+    <button class="nav-item"><div class="nav-dot" style="background:#8b5cf6"></div> Data Privacy</button>
+    <button class="nav-item"><div class="nav-dot" style="background:#ef4444"></div> Online Sales</button>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Team</div>
+    <button class="nav-item"><i class="ti ti-users"></i> Team SUPERNOVA</button>
+    <button class="nav-item"><i class="ti ti-settings"></i> Settings</button>
+  </div>
+
+  <div class="sidebar-footer">
+    <div style="font-size:11.5px;color:var(--text-3);display:flex;align-items:center;gap:5px;">
+      <i class="ti ti-server" style="font-size:13px;"></i>
+      <code id="sb-api-url" style="font-size:11px;">http://localhost:8000</code>
+    </div>
+    <div style="font-size:10.5px;color:var(--text-3);margin-top:3px;padding-left:19px;">UNESCAP Hackathon 2026</div>
+  </div>
+</aside>
+
+<!-- ── Main ──────────────────────────────────────────────────── -->
+<div class="main-wrap">
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <div>
+      <div class="page-title">Audit Dashboard</div>
+      <div class="page-sub">RDTII 2.1 Compliance Engine · Team SUPERNOVA · <code id="tb-api-url" style="font-size:10.5px;"></code></div>
+    </div>
+    <div class="topbar-right">
+      <div id="health-chip" style="display:none;"></div>
+      <div class="toggle-row">
+        <button class="toggle" id="autoRefreshToggle" onclick="this.classList.toggle('on');toggleAutoRefresh()" aria-label="Auto-refresh"></button>
+        <span class="toggle-label">Auto-refresh</span>
+      </div>
+      <button class="btn btn-ghost" onclick="fullRefresh()"><i class="ti ti-refresh"></i> Refresh</button>
+      <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" aria-label="Toggle theme">
+        <i class="ti ti-moon" id="themeIcon"></i>
+      </button>
+      <a class="btn btn-ghost" id="docs-link" href="#" target="_blank"><i class="ti ti-code"></i> API Docs</a>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <div class="page-content">
+
+    <!-- API unreachable banner -->
+    <div id="api-error" style="display:none;">
+      <div class="error-box">
+        <i class="ti ti-wifi-off"></i>
+        <div id="api-error-msg">Cannot connect to API.</div>
+      </div>
+    </div>
+
+    <!-- ══════════ PAGE: DASHBOARD ══════════ -->
+    <div id="page-dashboard" class="page">
+
+      <!-- ── Stats ─────────────────────────────────────── -->
+      <section>
+        <div class="section-head">
+          <div>
+            <div class="section-title">Overview</div>
+            <div class="section-sub" id="last-updated">Loading…</div>
+          </div>
+        </div>
+        <div class="stats-grid" id="stats-grid">
+          <div class="stat-card"><div class="loading-overlay"><i class="ti ti-loader-2 spinner"></i></div></div>
+          <div class="stat-card"><div class="loading-overlay"><i class="ti ti-loader-2 spinner"></i></div></div>
+          <div class="stat-card"><div class="loading-overlay"><i class="ti ti-loader-2 spinner"></i></div></div>
+          <div class="stat-card"><div class="loading-overlay"><i class="ti ti-loader-2 spinner"></i></div></div>
+        </div>
+      </section>
+
+      <!-- ── New Analysis ──────────────────────────────── -->
+      <section>
+          <div class="card">
+            <div class="card-title">New analysis</div>
+            <div class="card-desc">Submit a country for RDTII 2.1 indicator scoring. Select pillars and indicators below.</div>
+            <div class="form-row">
+              <div class="field">
+                <label>Country</label>
+                <select id="f-country">
+                  <option value="">Select country…</option>
+                  <option>Singapore</option>
+                  <option>Malaysia</option>
+                  <option>Australia</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>LLM Provider</label>
+                <select id="f-llm">
+                  <option value="auto">Auto</option>
+                  <option value="minimax">MiniMax-M3 (Free)</option>
+                  <option value="nvidia">Nvidia Nemotron Free</option>
+                  <option value="gemini">Gemini</option>
+                  <option value="deepseek">DeepSeek</option>
+                  <option value="openai">OpenAI</option>
+                  <option value="grok">Grok (xAI)</option>
+                  <option value="ollama">Ollama</option>
+                </select>
+              </div>
+            </div>
+            <div style="margin-top:12px;">
+              <label style="font-size:11px;font-weight:600;color:var(--text-3);letter-spacing:0.05em;text-transform:uppercase;">Pillars (check all that apply)</label>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:6px;" id="pillars-checkbox-group">
+                <label class="cb-label"><input type="checkbox" value="1"> 1 - Tariffs &amp; Trade Defence</label>
+                <label class="cb-label"><input type="checkbox" value="2"> 2 - Public Procurement</label>
+                <label class="cb-label"><input type="checkbox" value="3"> 3 - Foreign Direct Investment</label>
+                <label class="cb-label"><input type="checkbox" value="4"> 4 - Intellectual Property Rights</label>
+                <label class="cb-label"><input type="checkbox" value="5"> 5 - Telecom &amp; Competition</label>
+                <label class="cb-label"><input type="checkbox" value="6"> 6 - Cross-border Data</label>
+                <label class="cb-label"><input type="checkbox" value="7"> 7 - Data Protection &amp; Privacy</label>
+                <label class="cb-label"><input type="checkbox" value="8"> 8 - Intermediary Liability</label>
+                <label class="cb-label"><input type="checkbox" value="9"> 9 - Content Access</label>
+                <label class="cb-label"><input type="checkbox" value="10"> 10 - Non-technical NTMs</label>
+                <label class="cb-label"><input type="checkbox" value="11"> 11 - Standards &amp; Procedures</label>
+                <label class="cb-label"><input type="checkbox" value="12"> 12 - Online Sales &amp; Transactions</label>
+              </div>
+            </div>
+            <div style="margin-top:12px;">
+              <label style="font-size:11px;font-weight:600;color:var(--text-3);letter-spacing:0.05em;text-transform:uppercase;">Indicators (check all that apply)</label>
+              <div style="max-height:200px;overflow-y:auto;border:1px solid var(--border-med);border-radius:7px;padding:6px 8px;margin-top:6px;background:var(--bg);" id="indicators-checkbox-group">
+                <label class="cb-label"><input type="checkbox" value="1.4"> 1.4 - Trade defence on ICT</label>
+                <label class="cb-label"><input type="checkbox" value="2.1"> 2.1 - Foreign exclusions procurement</label>
+                <label class="cb-label"><input type="checkbox" value="2.2"> 2.2 - Source code in procurement</label>
+                <label class="cb-label"><input type="checkbox" value="2.3"> 2.3 - Procurement bidding limits</label>
+                <label class="cb-label"><input type="checkbox" value="3.1"> 3.1 - Foreign equity digital sectors</label>
+                <label class="cb-label"><input type="checkbox" value="3.2"> 3.2 - Joint venture requirement</label>
+                <label class="cb-label"><input type="checkbox" value="3.3"> 3.3 - Board nationality requirement</label>
+                <label class="cb-label"><input type="checkbox" value="3.4"> 3.4 - Investment screening</label>
+                <label class="cb-label"><input type="checkbox" value="3.5"> 3.5 - Commercial presence requirement</label>
+                <label class="cb-label"><input type="checkbox" value="4.01"> 4.01 - Patent application</label>
+                <label class="cb-label"><input type="checkbox" value="4.2"> 4.2 - Patent civil enforcement</label>
+                <label class="cb-label"><input type="checkbox" value="4.3"> 4.3 - Patent enforcement other</label>
+                <label class="cb-label"><input type="checkbox" value="4.5"> 4.5 - Copyright framework</label>
+                <label class="cb-label"><input type="checkbox" value="4.6"> 4.6 - Online copyright enforcement</label>
+                <label class="cb-label"><input type="checkbox" value="4.9"> 4.9 - Trade secret disclosure</label>
+                <label class="cb-label"><input type="checkbox" value="4.10"> 4.10 - Trade secret protection</label>
+                <label class="cb-label"><input type="checkbox" value="5.1"> 5.1 - Passive infrastructure sharing</label>
+                <label class="cb-label"><input type="checkbox" value="5.2"> 5.2 - Foreign equity telecom</label>
+                <label class="cb-label"><input type="checkbox" value="5.3"> 5.3 - Government telecom ownership</label>
+                <label class="cb-label"><input type="checkbox" value="5.4"> 5.4 - Functional/accounting separation</label>
+                <label class="cb-label"><input type="checkbox" value="5.5"> 5.5 - Telecom licensing</label>
+                <label class="cb-label"><input type="checkbox" value="5.7"> 5.7 - Independent telecom authority</label>
+                <label class="cb-label"><input type="checkbox" value="6.1"> 6.1 - Ban/local processing</label>
+                <label class="cb-label"><input type="checkbox" value="6.2"> 6.2 - Local storage requirement</label>
+                <label class="cb-label"><input type="checkbox" value="6.3"> 6.3 - Infrastructure requirement</label>
+                <label class="cb-label"><input type="checkbox" value="6.4"> 6.4 - Conditional flow regime</label>
+                <label class="cb-label"><input type="checkbox" value="7.1"> 7.1 - Data protection framework</label>
+                <label class="cb-label"><input type="checkbox" value="7.2"> 7.2 - Cybersecurity framework</label>
+                <label class="cb-label"><input type="checkbox" value="7.3"> 7.3 - Minimum retention</label>
+                <label class="cb-label"><input type="checkbox" value="7.4"> 7.4 - DPO/DPIA requirement</label>
+                <label class="cb-label"><input type="checkbox" value="7.5"> 7.5 - Government data access</label>
+                <label class="cb-label"><input type="checkbox" value="8.1"> 8.1 - Safe harbour copyright</label>
+                <label class="cb-label"><input type="checkbox" value="8.2"> 8.2 - Safe harbour other</label>
+                <label class="cb-label"><input type="checkbox" value="8.3"> 8.3 - User identity</label>
+                <label class="cb-label"><input type="checkbox" value="8.4"> 8.4 - Monitoring requirement</label>
+                <label class="cb-label"><input type="checkbox" value="9.1"> 9.1 - Web content blocking</label>
+                <label class="cb-label"><input type="checkbox" value="9.3"> 9.3 - Online advertising</label>
+                <label class="cb-label"><input type="checkbox" value="9.4"> 9.4 - Online content licensing</label>
+                <label class="cb-label"><input type="checkbox" value="10.1"> 10.1 - ICT import ban</label>
+                <label class="cb-label"><input type="checkbox" value="10.2"> 10.2 - Other ICT import restrictions</label>
+                <label class="cb-label"><input type="checkbox" value="10.3"> 10.3 - Local content requirement</label>
+                <label class="cb-label"><input type="checkbox" value="10.4"> 10.4 - ICT export restriction</label>
+                <label class="cb-label"><input type="checkbox" value="11.1"> 11.1 - Transparent standards</label>
+                <label class="cb-label"><input type="checkbox" value="11.2"> 11.2 - Self-certification</label>
+                <label class="cb-label"><input type="checkbox" value="11.3"> 11.3 - Product testing</label>
+                <label class="cb-label"><input type="checkbox" value="11.4"> 11.4 - Encryption standards</label>
+                <label class="cb-label"><input type="checkbox" value="12.01"> 12.01 - E-commerce foreign equity</label>
+                <label class="cb-label"><input type="checkbox" value="12.2"> 12.2 - Online purchase limits</label>
+                <label class="cb-label"><input type="checkbox" value="12.3"> 12.3 - E-commerce licence</label>
+                <label class="cb-label"><input type="checkbox" value="12.4.1"> 12.4.1 - Local bank account</label>
+                <label class="cb-label"><input type="checkbox" value="12.4.2"> 12.4.2 - Payment currency</label>
+                <label class="cb-label"><input type="checkbox" value="12.4.3"> 12.4.3 - Payment standards</label>
+                <label class="cb-label"><input type="checkbox" value="12.4.4"> 12.4.4 - Payment licensing</label>
+                <label class="cb-label"><input type="checkbox" value="12.4.5"> 12.4.5 - Payment ceiling</label>
+                <label class="cb-label"><input type="checkbox" value="12.4.6"> 12.4.6 - Mandatory intermediary</label>
+                <label class="cb-label"><input type="checkbox" value="12.4.7"> 12.4.7 - Other payment restrictions</label>
+                <label class="cb-label"><input type="checkbox" value="12.5"> 12.5 - De minimis threshold</label>
+                <label class="cb-label"><input type="checkbox" value="12.6"> 12.6 - Customs on e-transmission</label>
+                <label class="cb-label"><input type="checkbox" value="12.7"> 12.7 - Domain name requirement</label>
+                <label class="cb-label"><input type="checkbox" value="12.8"> 12.8 - Local presence online services</label>
+                <label class="cb-label"><input type="checkbox" value="12.9"> 12.9 - Consumer protection online</label>
+              </div>
+            </div>
+            <div style="margin-top:12px;display:flex;gap:10px;align-items:center;">
+              <button class="btn btn-primary" onclick="submitAnalysis()" style="height:36px;">
+                <i class="ti ti-player-play" style="font-size:13px;"></i> Submit
+              </button>
+              <div id="submit-feedback" style="display:none;"></div>
+            </div>
+          </div>
+      </section>
+
+      <!-- ── Infrastructure ───────────────────────────── -->
+      <section>
+        <div class="section-head"><div class="section-title">Infrastructure</div></div>
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title">Services</div>
+            <div class="svc-grid" id="svc-grid">
+              <div class="svc-card"><div class="svc-name">PostgreSQL</div><div class="svc-val"><i class="ti ti-loader-2 spinner" style="font-size:13px;"></i></div></div>
+              <div class="svc-card"><div class="svc-name">Redis</div><div class="svc-val"><i class="ti ti-loader-2 spinner" style="font-size:13px;"></i></div></div>
+              <div class="svc-card"><div class="svc-name">Workers</div><div class="svc-val"><i class="ti ti-loader-2 spinner" style="font-size:13px;"></i></div></div>
+              <div class="svc-card"><div class="svc-name">Queue depth</div><div class="svc-val"><i class="ti ti-loader-2 spinner" style="font-size:13px;"></i></div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">LLM providers</div>
+            <div style="font-size:11.5px;color:var(--text-3);margin-top:3px;">Default: <strong id="llm-default" style="color:var(--accent);">auto</strong></div>
+            <div class="llm-grid" id="llm-grid">
+              <div class="llm-chip off"><i class="ti ti-loader-2 spinner"></i> Loading…</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Latest Run ─────────────────────────────────── -->
+      <section>
+        <div class="section-head">
+          <div class="section-title">Latest run</div>
+        </div>
+        <div id="latest-run"><div class="loading-overlay"><i class="ti ti-loader-2 spinner"></i><span>Loading latest run…</span></div></div>
+      </section>
+
+    </div>
+
+    <!-- ══════════ PAGE: ALL RUNS ══════════ -->
+    <div id="page-runs" class="page" style="display:none;">
+      <section>
+        <div class="section-head">
+          <div class="section-title">All analysis runs</div>
+          <div class="tabs" id="runs-tabs">
+            <div class="tab active" onclick="filterRuns('ALL',this)">All</div>
+            <div class="tab" onclick="filterRuns('COMPLETE',this)">Complete</div>
+            <div class="tab" onclick="filterRuns('ACTIVE',this)">Active</div>
+            <div class="tab" onclick="filterRuns('FAILED',this)">Failed</div>
+            <div class="tab" onclick="filterRuns('QUEUED',this)">Queued</div>
+          </div>
+        </div>
+        <div id="runs-summary" class="stats-grid" style="grid-template-columns:repeat(5,1fr);"></div>
+        <div id="runs-list" class="runs-list">
+          <div class="loading-overlay"><i class="ti ti-loader-2 spinner"></i><span>Loading runs…</span></div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ══════════ PAGE: INDICATORS ══════════ -->
+    <div id="page-indicators" class="page" style="display:none;">
+      <section>
+        <div class="section-head"><div><div class="section-title"><i class="ti ti-list-details" style="color:var(--blue);"></i> All Indicators</div><div class="section-sub">Aggregated indicator results across all completed runs</div></div></div>
+        <div id="all-indicators-content"><div class="loading-overlay"><i class="ti ti-loader-2 spinner"></i><span>Loading indicators…</span></div></div>
+      </section>
+    </div>
+
+    <!-- ══════════ PAGE: LIVE LOGS ══════════ -->
+    <div id="page-logs" class="page" style="display:none;">
+      <section>
+        <div class="section-head"><div><div class="section-title"><i class="ti ti-terminal-2" style="color:var(--green);"></i> Live Logs</div><div class="section-sub">Real-time activity from all active analysis runs</div></div></div>
+        <div id="live-logs-content"><div class="loading-overlay"><i class="ti ti-loader-2 spinner"></i><span>Loading logs…</span></div></div>
+      </section>
+    </div>
+
+    <!-- ══════════ PAGE: EXPORTS ══════════ -->
+    <div id="page-exports" class="page" style="display:none;">
+      <section>
+        <div class="section-head"><div><div class="section-title"><i class="ti ti-file-export" style="color:var(--purple);"></i> Exports</div><div class="section-sub">Download indicator results from completed runs</div></div></div>
+        <div id="exports-content"><div class="loading-overlay"><i class="ti ti-loader-2 spinner"></i><span>Loading exports…</span></div></div>
+      </section>
+    </div>
+
+    <!-- ══════════ PAGE: AUDIT VIEW ══════════ -->
+    <div id="page-audit" class="page" style="display:none;">
+      <section>
+        <div class="section-head"><div><div class="section-title"><i class="ti ti-eye-search" style="color:var(--blue);"></i> Audit View</div><div class="section-sub">Inspect a single indicator result against source documents</div></div></div>
+        <div class="card">
+          <div class="field" style="flex-direction:row;align-items:center;gap:12px;">
+            <label style="white-space:nowrap;">Indicator Result ID</label>
+            <input id="audit-input" type="number" min="1" placeholder="e.g. 1" style="background:var(--bg);border:1px solid var(--border-med);border-radius:7px;padding:7px 10px;font-size:13px;color:var(--text);width:160px;font-family:inherit;outline:none;" onkeydown="if(event.key==='Enter')loadAuditPage()" />
+            <button class="btn btn-primary" onclick="loadAuditPage()"><i class="ti ti-eye"></i> Audit</button>
+          </div>
+        </div>
+        <div id="audit-result"></div>
+      </section>
+    </div>
+
+    <!-- ══════════ PAGE: REVIEW QUEUE ══════════ -->
+    <div id="page-queue" class="page" style="display:none;">
+      <section>
+        <div class="section-head"><div><div class="section-title"><i class="ti ti-flag" style="color:var(--amber);"></i> Review Queue</div><div class="section-sub">Indicator results flagged by the Arbiter for human review</div></div></div>
+        <div id="review-queue-list"><div class="loading-overlay"><i class="ti ti-loader-2 spinner"></i><span>Loading review queue…</span></div></div>
+      </section>
+    </div>
+
+    <!-- ══════════ PAGE: ALL RESULTS ══════════ -->
+    <div id="page-results" class="page" style="display:none;">
+      <section>
+        <div class="section-head"><div><div class="section-title"><i class="ti ti-list-details" style="color:var(--blue);"></i> All Results</div><div class="section-sub">Paginated indicator results across all completed runs</div></div></div>
+        <div id="all-results-pagination" class="stat-card" style="flex-direction:row;align-items:center;gap:12px;padding:10px 16px;display:none;">
+          <button class="btn btn-ghost btn-sm" id="ar-prev" onclick="arPrevPage()"><i class="ti ti-chevron-left"></i> Previous</button>
+          <span id="ar-range" style="font-size:12px;color:var(--text-3);flex:1;text-align:center;"></span>
+          <button class="btn btn-ghost btn-sm" id="ar-next" onclick="arNextPage()">Next <i class="ti ti-chevron-right"></i></button>
+        </div>
+        <div id="all-results-content"><div class="loading-overlay"><i class="ti ti-loader-2 spinner"></i><span>Loading results…</span></div></div>
+      </section>
+    </div>
+
+    <!-- ══════════ PAGE: TOKEN BURN ══════════ -->
+    <div id="page-token" class="page" style="display:none;">
+      <section>
+        <div class="section-head"><div><div class="section-title"><i class="ti ti-coins" style="color:var(--amber);"></i> Token Burn — Per Analysis</div><div class="section-sub">Token usage and cost estimates across LLM providers</div></div></div>
+        <div class="tabs" id="token-tabs" style="margin-bottom:16px;">
+          <div class="tab active" onclick="switchTokenTab('actual',this)">Actual Token Usage</div>
+          <div class="tab" onclick="switchTokenTab('calc',this)">Token Calculator</div>
+        </div>
+        <div id="token-actual"><div class="loading-overlay"><i class="ti ti-loader-2 spinner"></i><span>Loading token usage…</span></div></div>
+        <div id="token-calc" style="display:none;">
+          <div class="card" style="margin-bottom:16px;">
+            <div class="card-title">Estimate token consumption</div>
+            <div class="card-desc" style="margin-bottom:14px;">Estimate token consumption before submitting an analysis</div>
+            <div class="two-col">
+              <div>
+                <div class="field">
+                  <label>Provider</label>
+                  <select id="tc-provider" onchange="updateTokenCalc()">
+                    <option value="openai">OpenAI (GPT-4o-mini)</option>
+                    <option value="gemini">Gemini (2.5 Flash)</option>
+                    <option value="deepseek">DeepSeek (deepseek-chat)</option>
+                    <option value="grok">Grok (grok-2)</option>
+                    <option value="minimax">MiniMax-M3 (Free)</option>
+                    <option value="nvidia">Nvidia Nemotron (Free)</option>
+                    <option value="ollama">Ollama (Local)</option>
+                  </select>
+                </div>
+                <div class="field" style="margin-top:12px;">
+                  <label>Input / System Prompt</label>
+                  <textarea id="tc-input" rows="4" style="background:var(--bg);border:1px solid var(--border-med);border-radius:7px;padding:8px 10px;font-size:13px;color:var(--text);font-family:inherit;outline:none;" placeholder="Paste your prompt…" oninput="updateTokenCalc()"></textarea>
+                </div>
+                <div class="field" style="margin-top:12px;">
+                  <label>Expected Output</label>
+                  <textarea id="tc-output" rows="3" style="background:var(--bg);border:1px solid var(--border-med);border-radius:7px;padding:8px 10px;font-size:13px;color:var(--text);font-family:inherit;outline:none;" placeholder="Paste expected response…" oninput="updateTokenCalc()"></textarea>
+                </div>
+              </div>
+              <div>
+                <div id="tc-summary" style="margin-bottom:16px;"></div>
+                <hr style="margin:12px 0;">
+                <div style="font-weight:600;font-size:13px;margin-bottom:8px;">Per-Analysis Estimate</div>
+                <div class="field" style="margin-bottom:8px;">
+                  <label>LLM calls per indicator</label>
+                  <input type="range" id="tc-calls" min="1" max="10" value="5" oninput="updateTokenCalcAnalysis()" style="width:100%;">
+                  <span id="tc-calls-val" style="font-size:11px;color:var(--text-3);">5</span>
+                </div>
+                <div class="field" style="margin-bottom:8px;">
+                  <label>Number of indicators</label>
+                  <input type="range" id="tc-indicators" min="1" max="61" value="61" oninput="updateTokenCalcAnalysis()" style="width:100%;">
+                  <span id="tc-indicators-val" style="font-size:11px;color:var(--text-3);">61</span>
+                </div>
+                <div class="field" style="margin-bottom:8px;">
+                  <label>Avg input tokens per call</label>
+                  <input type="range" id="tc-avg-in" min="1000" max="100000" value="8000" step="500" oninput="updateTokenCalcAnalysis()" style="width:100%;">
+                  <span id="tc-avg-in-val" style="font-size:11px;color:var(--text-3);">8,000</span>
+                </div>
+                <div class="field" style="margin-bottom:8px;">
+                  <label>Avg output tokens per call</label>
+                  <input type="range" id="tc-avg-out" min="500" max="50000" value="2000" step="500" oninput="updateTokenCalcAnalysis()" style="width:100%;">
+                  <span id="tc-avg-out-val" style="font-size:11px;color:var(--text-3);">2,000</span>
+                </div>
+                <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-top:12px;" id="tc-analysis-metrics"></div>
+                <div style="font-size:10.5px;color:var(--text-3);margin-top:8px;">~1 token ~ 4 characters (English). Estimate only.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ══════════ PAGE: COUNTRIES ══════════ -->
+    <div id="page-countries" class="page" style="display:none;">
+      <section>
+        <div class="section-head"><div><div class="section-title"><i class="ti ti-world" style="color:var(--green);"></i> Analysed Countries</div><div class="section-sub">Countries that have been submitted for RDTII analysis</div></div></div>
+        <div id="countries-content"><div class="loading-overlay"><i class="ti ti-loader-2 spinner"></i><span>Loading countries…</span></div></div>
+      </section>
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    <span>RDTII 2.1 Compliance Engine · Team SUPERNOVA · UNESCAP Global Hackathon 2026</span>
+    <span id="footer-status" style="display:flex;align-items:center;gap:5px;"></span>
+  </footer>
+</div>
+
+<script>
+/* ── Config ────────────────────────────────────────────── */
+const API_BASE    = (window.localStorage.getItem('rdtii_api_base') || (window.location.origin.startsWith('file://') ? 'http://localhost:8000' : window.location.origin)).replace(/\/$/, '');
+const EXPORT_BASE = API_BASE;
+
+document.getElementById('sb-api-url').textContent = API_BASE;
+document.getElementById('tb-api-url').textContent = API_BASE;
+document.getElementById('docs-link').href = API_BASE + '/docs';
+
+/* ── Theme ─────────────────────────────────────────────── */
+const saved = localStorage.getItem('rdtii_theme') || 'light';
+document.documentElement.setAttribute('data-theme', saved);
+updateThemeIcon();
+
+function toggleTheme() {
+  const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('rdtii_theme', t);
+  updateThemeIcon();
+}
+
+function updateThemeIcon() {
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  document.getElementById('themeIcon').className = dark ? 'ti ti-sun' : 'ti ti-moon';
+}
+
+/* ── Auto-refresh ──────────────────────────────────────── */
+let autoRefreshTimer = null;
+let allIndicatorsData = [];
+
+function toggleAutoRefresh() {
+  const on = document.getElementById('autoRefreshToggle').classList.contains('on');
+  if (on) { autoRefreshTimer = setInterval(fullRefresh, 10000); }
+  else { clearInterval(autoRefreshTimer); }
+}
+
+/* ── API helper ────────────────────────────────────────── */
+function fetchTimeout(ms) {
+  let id;
+  const ctrl = new AbortController();
+  id = setTimeout(() => ctrl.abort(), ms);
+  return { signal: ctrl.signal, clear: () => clearTimeout(id) };
+}
+
+async function apiGet(path, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const t = fetchTimeout(25000);
+      const r = await fetch(API_BASE + path, { signal: t.signal });
+      t.clear();
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return [await r.json(), null];
+    } catch (e) {
+      if (i < retries - 1) await sleep(2000);
+      else return [null, e.message];
+    }
+  }
+  return [null, 'Max retries exceeded'];
+}
+
+async function apiPost(path, body) {
+  for (let i = 0; i < 3; i++) {
+    try {
+      const t = fetchTimeout(25000);
+      const r = await fetch(API_BASE + path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        signal: t.signal,
+      });
+      t.clear();
+      return [r.status, await r.text()];
+    } catch (e) {
+      if (i < 2) await sleep(2000);
+      else return [0, e.message];
+    }
+  }
+}
+
+async function apiDelete(path) {
+  for (let i = 0; i < 3; i++) {
+    try {
+      const t = fetchTimeout(25000);
+      const r = await fetch(API_BASE + path, { method: 'DELETE', signal: t.signal });
+      t.clear();
+      return [r.status, await r.text()];
+    } catch (e) {
+      if (i < 2) await sleep(2000);
+      else return [0, e.message];
+    }
+  }
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+/* ── Status helpers ────────────────────────────────────── */
+const STATUS_PILL = {
+  COMPLETE:   ['pill-green',  'ti-check',          'Complete'],
+  FAILED:     ['pill-red',    'ti-x',              'Failed'],
+  QUEUED:     ['pill-blue',   'ti-clock',          'Queued'],
+  DISCOVERING:['pill-amber',  'ti-loader-2',       'Discovering'],
+  ANALYSING:  ['pill-amber',  'ti-loader-2',       'Analysing'],
+  RUNNING:    ['pill-amber',  'ti-loader-2',       'Running'],
+};
+
+function pillHtml(status) {
+  const [cls, icon, label] = STATUS_PILL[status] || ['pill-gray','ti-minus', status];
+  const spin = ['DISCOVERING','ANALYSING','RUNNING'].includes(status) ? 'style="animation:spin 1s linear infinite"' : '';
+  return `<span class="pill ${cls}"><i class="ti ${icon}" ${spin}></i> ${label}</span>`;
+}
+
+function progColor(status) {
+  if (status === 'COMPLETE')   return 'var(--green)';
+  if (status === 'FAILED')     return 'var(--red)';
+  if (status === 'QUEUED')     return 'var(--blue)';
+  return 'var(--accent)';
+}
+
+/* ── Load health ───────────────────────────────────────── */
+async function loadHealth() {
+  const [health, err] = await apiGet('/health');
+
+  // API unreachable
+  if (err) {
+    document.getElementById('api-error').style.display = 'block';
+    document.getElementById('api-error-msg').textContent = `API Unreachable — ${err}`;
+    setHealthChip('error', `Unreachable`);
+    return false;
+  }
+
+  document.getElementById('api-error').style.display = 'none';
+
+  const overall = health.status || 'unknown';
+  if (overall === 'ok')       setHealthChip('ok', `Connected`);
+  else if (overall === 'degraded') setHealthChip('warn', `Degraded · v${health.version || 'N/A'}`);
+  else                        setHealthChip('error', `${overall.toUpperCase()}`);
+
+  const now = new Date().toISOString().replace('T',' ').slice(0,19) + ' UTC';
+  document.getElementById('last-updated').textContent = `Updated ${now}`;
+
+  // Footer
+  document.getElementById('footer-status').innerHTML =
+    `<i class="ti ti-point-filled" style="color:var(--green);font-size:13px;"></i> All systems operational`;
+
+  // Services
+  const svc = health.services || {};
+  const q   = health.queue || {};
+  document.getElementById('svc-grid').innerHTML = `
+    ${svcCard('PostgreSQL', svc.database === 'ok' ? 'Connected' : 'Error', svc.database === 'ok' ? 'green' : 'red')}
+    ${svcCard('Redis',      svc.redis    === 'ok' ? 'Connected' : 'Error', svc.redis    === 'ok' ? 'green' : 'red')}
+    ${svcCard('Workers',    `${q.workers_online || 0} online`, q.workers_online > 0 ? 'green' : 'amber')}
+    ${svcCard('Queue depth',`${q.celery_queue_depth || 0} tasks`, q.celery_queue_depth > 0 ? 'amber' : 'green')}
+  `;
+
+  // LLM providers
+  const llm = health.llm || {};
+  document.getElementById('llm-default').textContent = llm.active || 'auto';
+
+  const LLM_NAMES = { gemini:'Gemini', openai:'OpenAI', grok:'Grok', deepseek:'DeepSeek', minimax:'MiniMax-M3', nvidia:'Nvidia Free', ollama:'Ollama' };
+  document.getElementById('llm-grid').innerHTML = Object.entries(LLM_NAMES).map(([key, label]) => {
+    const info = llm[key] || {};
+    const ok   = info.status === 'ok';
+    const ks   = info.api_key_set;
+    const cls  = ok ? 'ok' : ks ? 'fail' : 'off';
+    const icon = ok ? 'ti-circle-check' : ks ? 'ti-circle-x' : 'ti-minus-circle';
+    const msg  = (info.message || info.base_url || '').slice(0,40);
+    return `<div class="llm-chip ${cls}" title="${msg}"><i class="ti ${icon}"></i> ${label}</div>`;
+  }).join('');
+
+  return health;
+}
+
+function svcCard(name, val, color) {
+  const pillMap = { green:'pill-green', red:'pill-red', amber:'pill-amber', blue:'pill-blue' };
+  const cls = pillMap[color] || 'pill-gray';
+  return `<div class="svc-card">
+    <div class="svc-name">${name}</div>
+    <div class="svc-val">${val} <span class="pill ${cls}" style="font-size:10px;padding:1px 7px;">${color==='green'?'OK':color==='red'?'Err':color==='amber'?'Busy':'—'}</span></div>
+  </div>`;
+}
+
+function setHealthChip(type, text) {
+  const c = document.getElementById('health-chip');
+  const map = { ok:'green', warn:'amber', error:'red' };
+  const col = map[type] || 'amber';
+  c.style.display = 'inline-flex';
+  c.style.background = `var(--${col}-bg)`;
+  c.style.border     = `1px solid var(--${col}-bd)`;
+  c.style.color      = `var(--${col})`;
+  c.style.alignItems = 'center';
+  c.style.gap = '6px';
+  c.style.padding = '4px 11px';
+  c.style.borderRadius = '99px';
+  c.style.fontSize = '12px';
+  c.style.fontWeight = '500';
+  c.innerHTML = `<div class="status-dot" style="width:6px;height:6px;border-radius:50%;background:var(--${col});${col==='green'?'animation:none':''}"></div> ${text}`;
+}
+
+/* ── Checkbox helpers ────────────────────────────────────── */
+function getCheckedValues(groupId) {
+  return Array.from(document.querySelectorAll(`#${groupId} input[type="checkbox"]:checked`)).map(cb => cb.value);
+}
+
+/* ── Load indicators list ──────────────────────────────── */
+async function loadIndicatorsList() {
+  const [data, err] = await apiGet('/api/v1/analysis/indicators');
+  if (err) {
+    console.warn('Failed to load indicators:', err);
+  } else {
+    allIndicatorsData = data || [];
+  }
+}
+
+/* ── Load runs ─────────────────────────────────────────── */
+let allRuns = [];
+let activeFilter = 'ALL';
+
+async function loadRuns() {
+  const [runs, err] = await apiGet('/api/v1/analysis/runs');
+  if (err) {
+    document.getElementById('runs-list').innerHTML =
+      `<div class="error-box"><i class="ti ti-alert-triangle"></i><div>${err}</div></div>`;
+    return;
+  }
+
+  allRuns = runs || [];
+  renderStats(allRuns);
+
+  // Latest run on dashboard
+  const latestEl = document.getElementById('latest-run');
+  if (latestEl) {
+    if (allRuns.length === 0)
+      latestEl.innerHTML = `<div class="info-box"><i class="ti ti-info-circle"></i><div>No runs yet. Submit a new analysis above.</div></div>`;
+    else
+      latestEl.innerHTML = buildRunCard(allRuns[0]);
+  }
+
+  renderRuns(allRuns, activeFilter);
+}
+
+function renderStats(runs) {
+  const total   = runs.length;
+  const done    = runs.filter(r => r.status === 'COMPLETE').length;
+  const failed  = runs.filter(r => r.status === 'FAILED').length;
+  const queued  = runs.filter(r => r.status === 'QUEUED').length;
+  const active  = runs.filter(r => ['DISCOVERING','ANALYSING','RUNNING'].includes(r.status)).length;
+
+  // Update overview stat cards
+  document.getElementById('stats-grid').innerHTML = `
+    ${statCard('Total runs',   total,  'ti-chart-bar',    '', 'var(--bg)',        'var(--text-2)')}
+    ${statCard('Completed',    done,   'ti-circle-check', `${Math.round(done/total*100)||0}% rate`, 'var(--green-bg)', 'var(--green)')}
+    ${statCard('In queue',     queued, 'ti-clock-pause',  `${active} worker${active!==1?'s':''} active`, 'var(--amber-bg)', 'var(--amber)')}
+    ${statCard('Failed',       failed, 'ti-alert-triangle','', 'var(--red-bg)',  'var(--red)')}
+  `;
+
+  // Mini summary above runs
+  document.getElementById('runs-summary').innerHTML = [
+    ['Total', total,'var(--text-2)','var(--bg)'],
+    ['Complete', done,'var(--green)','var(--green-bg)'],
+    ['Failed', failed,'var(--red)','var(--red-bg)'],
+    ['Queued', queued,'var(--blue)','var(--blue-bg)'],
+    ['Active', active,'var(--amber)','var(--amber-bg)'],
+  ].map(([l,v,c,bg]) => `
+    <div class="stat-card" style="padding:14px 16px;gap:6px;">
+      <div class="stat-label">${l}</div>
+      <div class="stat-value" style="font-size:22px;color:${c};">${v}</div>
+    </div>`).join('');
+}
+
+function statCard(label, value, icon, change, iconBg, iconColor) {
+  return `<div class="stat-card">
+    <div class="stat-icon-row">
+      <div class="stat-icon" style="background:${iconBg};color:${iconColor};"><i class="ti ${icon}"></i></div>
+      ${change ? `<span class="stat-change" style="color:${iconColor};">${change}</span>` : ''}
+    </div>
+    <div>
+      <div class="stat-label">${label}</div>
+      <div class="stat-value">${value}</div>
+    </div>
+  </div>`;
+}
+
+function filterRuns(status, el) {
+  activeFilter = status;
+  document.querySelectorAll('#runs-tabs .tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderRuns(allRuns, status);
+}
+
+function renderRuns(runs, filter) {
+  let filtered = runs;
+  if (filter === 'ACTIVE')   filtered = runs.filter(r => ['DISCOVERING','ANALYSING','RUNNING'].includes(r.status));
+  else if (filter !== 'ALL') filtered = runs.filter(r => r.status === filter);
+
+  if (filtered.length === 0) {
+    document.getElementById('runs-list').innerHTML =
+      `<div class="info-box"><i class="ti ti-info-circle"></i><div>No ${filter === 'ALL' ? '' : filter.toLowerCase() + ' '}runs found.</div></div>`;
+    return;
+  }
+
+  document.getElementById('runs-list').innerHTML = filtered.map(run => buildRunCard(run)).join('');
+
+  // Auto-open failed runs
+  filtered.filter(r => r.status === 'FAILED').forEach(r => {
+    const el = document.getElementById('rc-' + r.id);
+    if (el) el.classList.add('open');
+  });
+}
+
+function buildRunCard(run) {
+  const s     = run.status;
+  const rid   = run.id;
+  const total = run.total_indicators || 0;
+  const done  = run.completed_indicators || 0;
+  const pct   = total > 0 ? Math.round((done / total) * 100) : 0;
+  const isActive = ['DISCOVERING','ANALYSING','RUNNING'].includes(s);
+  const created  = (run.created_at || '').slice(0,19).replace('T',' ');
+  const prov     = run.llm_provider || 'auto';
+  const em       = run.error_message || '';
+
+  const stripedClass = isActive ? 'active' : '';
+
+  return `<div class="run-card" id="rc-${rid}">
+    <div class="run-header" onclick="toggleRun('rc-${rid}')">
+      <div class="run-icon"><i class="ti ti-map-pin"></i></div>
+      <div class="run-meta">
+        <div class="run-country">${escH(run.country)}</div>
+        <div class="run-id">${rid.slice(0,8)}…</div>
+      </div>
+      ${pillHtml(s)}
+      <div class="run-progress-col">
+        <div class="prog-bg">
+          <div class="prog-fill ${stripedClass}" style="width:${pct}%;background:${stripedClass ? 'var(--accent)' : progColor(s)};"></div>
+        </div>
+        <div class="prog-label">${done} / ${total} indicators</div>
+      </div>
+      <div class="run-time"><i class="ti ti-clock" style="font-size:12px;vertical-align:-1px;"></i> ${created.slice(11,16) || '—'}</div>
+      <i class="ti ti-chevron-down chevron"></i>
+    </div>
+    <div class="run-body" id="rb-${rid}">
+      <div class="run-detail-grid">
+        <div><div class="dl">Country</div><div class="dv">${escH(run.country)}</div></div>
+        <div><div class="dl">Status</div><div class="dv">${pillHtml(s)}</div></div>
+        <div><div class="dl">Indicators</div><div class="dv">${done} / ${total}</div></div>
+        <div><div class="dl">Started</div><div class="dv">${created || '—'}</div></div>
+      </div>
+      <div style="font-size:11.5px;color:var(--text-3);display:flex;align-items:center;gap:5px;margin-bottom:10px;">
+        <i class="ti ti-cpu" style="font-size:13px;"></i> Model: ${escH(prov)}
+        ${run.current_activity ? `<span style="color:var(--text-2);">· ${escH(run.current_activity)}</span>` : ''}
+      </div>
+
+      ${isActive ? `<div id="events-${rid}"><div class="loading-overlay" style="padding:16px;"><i class="ti ti-loader-2 spinner"></i><span>Loading events…</span></div></div>` : ''}
+      ${s === 'QUEUED' ? `<div class="info-box"><i class="ti ti-clock"></i><div>Waiting in queue. Will start once a worker slot is free.</div></div>` : ''}
+      ${s === 'FAILED' && em ? `<div class="error-box"><i class="ti ti-alert-triangle"></i><div>${escH(em)}</div></div>` : ''}
+      ${s === 'COMPLETE' ? buildCompleteSection(rid) : ''}
+
+      <div style="margin-top:13px;display:flex;gap:8px;align-items:center;">
+        <button class="btn btn-ghost btn-sm" onclick="deleteRun('${rid}')"><i class="ti ti-trash" style="font-size:13px;color:var(--red);"></i> Delete</button>
+        <span style="font-size:10.5px;color:var(--text-3);font-family:var(--mono);">${rid}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+function buildCompleteSection(rid) {
+  return `
+    <div class="export-row">
+      <span style="font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:0.05em;">Export</span>
+      <a class="export-link" href="${EXPORT_BASE}/api/v1/analysis/${rid}/export?format=json" target="_blank"><i class="ti ti-file-type-json"></i> JSON</a>
+      <a class="export-link" href="${EXPORT_BASE}/api/v1/analysis/${rid}/export?format=csv"  target="_blank"><i class="ti ti-file-type-csv"></i> CSV (RDTII)</a>
+      <a class="export-link" href="${EXPORT_BASE}/api/v1/analysis/${rid}/export?format=rdtii_flat_csv" target="_blank"><i class="ti ti-file-spreadsheet"></i> CSV (Flat 9-col)</a>
+      <a class="export-link" href="${EXPORT_BASE}/api/v1/analysis/${rid}/export?format=submission_csv" target="_blank"><i class="ti ti-file-spreadsheet"></i> CSV (Submission)</a>
+      <a class="export-link" href="${EXPORT_BASE}/api/v1/analysis/${rid}/export?format=excel" target="_blank"><i class="ti ti-table"></i> Excel (3 sheets)</a>
+    </div>
+    <div id="detail-${rid}">
+      <div class="loading-overlay" style="padding:16px;"><i class="ti ti-loader-2 spinner"></i><span>Loading results…</span></div>
+    </div>`;
+}
+
+/* ── Toggle run card open/close ────────────────────────── */
+function toggleRun(id) {
+  const card = document.getElementById(id);
+  const wasOpen = card.classList.contains('open');
+  card.classList.toggle('open');
+  if (!wasOpen) {
+    const rid = id.replace('rc-', '');
+    const run = allRuns.find(r => r.id === rid);
+    if (!run) return;
+    const s = run.status;
+    if (['DISCOVERING','ANALYSING','RUNNING'].includes(s)) loadEvents(rid);
+    if (s === 'COMPLETE') loadDetail(rid);
+  }
+}
+
+/* ── Load live events ──────────────────────────────────── */
+const LOG_ICONS = {
+  SEARCH:      ['ti-search',          'var(--blue)'],
+  CLASSIFY:    ['ti-tag',             'var(--purple)'],
+  DOWNLOAD:    ['ti-download',        'var(--green)'],
+  ZONE1:       ['ti-circle-check',    'var(--green)'],
+  CHUNK:       ['ti-file-text',       'var(--text-2)'],
+  EMBED:       ['ti-brain',           'var(--purple)'],
+  PROSECUTION: ['ti-gavel',           'var(--text-2)'],
+  DEFENSE:     ['ti-shield',          'var(--green)'],
+  ARBITER:     ['ti-scale',           'var(--amber)'],
+  INDICATOR:   ['ti-chart-bar',       'var(--blue)'],
+  STATUS:      ['ti-info-circle',     'var(--text-3)'],
+  ERROR:       ['ti-alert-triangle',  'var(--red)'],
+};
+
+async function loadEvents(rid) {
+  const [data, err] = await apiGet(`/api/v1/analysis/${rid}/events?offset=0&limit=40`);
+  const el = document.getElementById(`events-${rid}`);
+  if (!el) return;
+
+  if (err || !data || !data.events || data.events.length === 0) {
+    el.innerHTML = `<div style="font-size:12px;color:var(--text-3);margin-top:8px;">${err ? 'Events error: ' + err : 'No events yet.'}</div>`;
+    return;
+  }
+
+  const lines = data.events.map(ev => {
+    const ts    = (ev.created_at || '').slice(11, 19);
+    const agent = ev.agent || '';
+    const ind   = ev.indicator_id || '';
+    const msg   = (ev.message || '').slice(0, 120);
+    const tag   = (ev.event_type || '').replace(/_DONE$/, '').replace(/_START$/, '');
+    const [icon, color] = LOG_ICONS[tag] || ['ti-point','var(--text-3)'];
+    return `<div class="ll">
+      <span class="ll-ts">${ts}</span>
+      <i class="ti ${icon} ll-icon" style="color:${color};"></i>
+      <span class="ll-agent">${escH(agent)}</span>
+      <span class="ll-ind">${escH(ind)}</span>
+      <span class="ll-msg">${escH(msg)}</span>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="log-header"><i class="ti ti-terminal"></i> Live activity log</div>
+    <div class="log-box">${lines}</div>`;
+
+  const box = el.querySelector('.log-box');
+  if (box) box.scrollTop = box.scrollHeight;
+}
+
+/* ── Load run detail (complete) ────────────────────────── */
+async function loadDetail(rid) {
+  const el = document.getElementById(`detail-${rid}`);
+  if (!el) return;
+
+  const [det, err] = await apiGet(`/api/v1/analysis/${rid}`);
+  if (err || !det) {
+    el.innerHTML = `<div class="error-box" style="margin-top:10px;"><i class="ti ti-alert-triangle"></i><div>Failed to load results: ${err}</div></div>`;
+    return;
+  }
+
+  const inds = det.indicator_results || [];
+  if (inds.length === 0) {
+    el.innerHTML = `<div style="font-size:12px;color:var(--text-3);margin-top:10px;">No indicator results found.</div>`;
+    return;
+  }
+
+  const country = det.country || '';
+  const rows = inds.map(r_ => {
+    const parts = (r_.indicator_id || '').split('.');
+    const suffix = parts.length > 1 ? parts.slice(1).join('.') : parts[0];
+    const rdtiiId = `P${r_.pillar_id}-I${suffix}`;
+    const citation = (r_.article_citation || '');
+    const lawRef = citation ? citation.split(',')[0].trim() : '';
+    return `<tr>
+      <td style="font-family:var(--mono);color:var(--accent);font-weight:500;">${r_.id != null ? r_.id : '—'}</td>
+      <td>${escH(country)}</td>
+      <td>${escH((r_.act_and_practice || '—').slice(0,50))}</td>
+      <td>${escH(lawRef || '—')}</td>
+      <td>${escH(r_.timeframe || '')}</td>
+      <td>${escH(rdtiiId)}</td>
+      <td>${escH(citation || '—')}</td>
+      <td style="font-size:10px;">${escH(r_.discovery_tag || 'NEW')}</td>
+      <td>${escH(r_.location_ref || '')}</td>
+      <td>${escH((r_.verbatim_quote || '—').slice(0,80))}</td>
+      <td>${escH(((r_.mapping_rationale || r_.impact_comments || '') + '').slice(0,100))}</td>
+      <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;font-size:10px;">${escH((r_.references || '—').slice(0,60))}</td>
+      <td>${r_.confidence != null ? (r_.confidence*100).toFixed(0) + '%' : ''}</td>
+      <td style="font-size:10px;">${escH((r_.note || '').slice(0,40))}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="showAudit(${r_.id})" title="Audit"><i class="ti ti-eye" style="font-size:13px;"></i></button></td>
+    </tr>`;
+  }).join('');
+
+  el.innerHTML = `<div class="tbl-wrap" style="overflow-x:auto;">
+    <table class="dt" style="font-size:11px;white-space:nowrap;">
+      <thead><tr>
+        <th>ID</th><th>Economy</th><th>Law Name</th><th>Law Number / Ref</th><th>Last Amended</th>
+        <th>Indicator ID</th><th>Article / Section</th><th>Discovery Tag</th>
+        <th>Location Ref</th><th>Verbatim Snippet</th><th>Mapping Rationale</th>
+        <th>Source URL</th><th>Confidence</th><th>Notes</th><th></th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
+}
+
+/* ── Submit analysis ───────────────────────────────────── */
+async function submitAnalysis() {
+  const country = document.getElementById('f-country').value;
+  const llm     = document.getElementById('f-llm').value;
+  const fb      = document.getElementById('submit-feedback');
+
+  if (!country) {
+    fb.style.display = 'block';
+    fb.innerHTML = `<span class="pill pill-red"><i class="ti ti-x"></i> Please select a country</span>`;
+    return;
+  }
+
+  const selectedPillars = getCheckedValues('pillars-checkbox-group').map(v => parseInt(v)).filter(v => !isNaN(v));
+  const selectedIndicators = getCheckedValues('indicators-checkbox-group');
+
+  fb.style.display = 'block';
+  fb.innerHTML = `<span class="pill pill-amber"><i class="ti ti-loader-2" style="animation:spin 1s linear infinite;"></i> Submitting…</span>`;
+
+  const payload = { country, llm_provider: llm };
+  if (selectedIndicators.length > 0) {
+    payload.indicator_ids = selectedIndicators;
+  } else if (selectedPillars.length > 0) {
+    payload.pillar_ids = selectedPillars;
+  }
+
+  const [status, body] = await apiPost('/api/v1/analysis/run', payload);
+
+  if (status === 200 || status === 202) {
+    fb.innerHTML = `<span class="pill pill-green"><i class="ti ti-check"></i> Queued for ${escH(country)}</span>`;
+    await sleep(1500);
+    fb.style.display = 'none';
+    loadRuns();
+  } else {
+    fb.innerHTML = `<div class="error-box" style="margin-top:0;"><i class="ti ti-alert-triangle"></i><div>${escH(body || 'Submission failed')}</div></div>`;
+  }
+}
+
+/* ── Delete run ────────────────────────────────────────── */
+async function deleteRun(rid) {
+  if (!confirm('Delete this run? This cannot be undone.')) return;
+  const [status, body] = await apiDelete(`/api/v1/analysis/${rid}`);
+  if (status === 204) {
+    allRuns = allRuns.filter(r => r.id !== rid);
+    renderStats(allRuns);
+    renderRuns(allRuns, activeFilter);
+  } else {
+    alert('Delete failed: ' + body);
+  }
+}
+
+/* ── Toggle run body ───────────────────────────────────── */
+
+/* ── Escape HTML ───────────────────────────────────────── */
+function escH(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ── Full refresh ──────────────────────────────────────── */
+function fullRefresh() {
+  loadRuns();
+  loadHealth();
+  loadIndicatorsList();
+}
+
+/* ── Token Burn — Pricing ───────────────────────────────── */
+const TOKEN_PRICING = {
+  openai:   { input_per_1m: 0.15,  output_per_1m: 0.60,  color: '#19c37d',  label: 'OpenAI (GPT-4o-mini)' },
+  gemini:   { input_per_1m: 0.15,  output_per_1m: 0.60,  color: '#4285f4',  label: 'Gemini (2.5 Flash)' },
+  deepseek: { input_per_1m: 0.27,  output_per_1m: 1.10,  color: '#4f6b8a',  label: 'DeepSeek (deepseek-chat)' },
+  grok:     { input_per_1m: 2.00,  output_per_1m: 10.00, color: '#1c1c1c',  label: 'Grok (grok-2)' },
+  minimax:  { input_per_1m: 0,     output_per_1m: 0,     color: '#ff6b6b',  label: 'MiniMax-M3 (Free)' },
+  nvidia:   { input_per_1m: 0,     output_per_1m: 0,     color: '#76b900',  label: 'Nvidia Nemotron (Free)' },
+  ollama:   { input_per_1m: 0,     output_per_1m: 0,     color: '#f5a623',  label: 'Ollama (Local)' },
+};
+
+function estCost(prov, inp, out) {
+  const info = TOKEN_PRICING[prov];
+  if (!info || (info.input_per_1m === 0 && info.output_per_1m === 0)) return 0;
+  return (inp / 1_000_000) * info.input_per_1m + (out / 1_000_000) * info.output_per_1m;
+}
+
+/* ── Token Burn — Actual Tab ────────────────────────────── */
+async function loadTokenActual() {
+  const el = document.getElementById('token-actual');
+  if (!el) return;
+  el.innerHTML = '<div class="loading-overlay"><i class="ti ti-loader-2 spinner"></i><span>Loading token usage…</span></div>';
+
+  const [data, err] = await apiGet('/api/v1/analysis/token-usage?limit=50');
+  if (err) {
+    el.innerHTML = `<div class="error-box"><i class="ti ti-alert-triangle"></i><div>${err}</div></div>`;
+    return;
+  }
+  if (!data || data.length === 0) {
+    el.innerHTML = '<div class="info-box"><i class="ti ti-info-circle"></i><div>No analysis runs yet. Submit an analysis to see token burn data.</div></div>';
+    return;
+  }
+
+  const rows = data.map(t => ({
+    'Run ID': t.run_id ? t.run_id.slice(0,8) + '...' : '',
+    Country: t.country,
+    Status: t.status,
+    Provider: t.llm_provider || 'auto',
+    'Input Tokens': Number(t.total_input_tokens || 0).toLocaleString(),
+    'Output Tokens': Number(t.total_output_tokens || 0).toLocaleString(),
+    'Total Tokens': Number(t.total_tokens || 0).toLocaleString(),
+    'Est. Cost': t.estimated_cost_usd > 0 ? '$' + Number(t.estimated_cost_usd).toFixed(6) : 'FREE',
+    Indicators: t.indicators_analysed || 0,
+  }));
+
+  const tableHead = Object.keys(rows[0]).map(k => `<th>${k}</th>`).join('');
+  const tableBody = rows.map(r => `<tr>${Object.values(r).map(v => `<td>${escH(v)}</td>`).join('')}</tr>`).join('');
+
+  el.innerHTML = `<div class="tbl-wrap"><table class="dt">${tableHead ? '<thead><tr>' + tableHead + '</tr></thead>' : ''}<tbody>${tableBody}</tbody></table></div>`;
+
+  const totalIn = data.reduce((s, t) => s + (t.total_input_tokens || 0), 0);
+  const totalOut = data.reduce((s, t) => s + (t.total_output_tokens || 0), 0);
+  const totalCost = data.reduce((s, t) => s + (t.estimated_cost_usd || 0), 0);
+
+  el.innerHTML += `<div class="stats-grid" style="margin-top:14px;grid-template-columns:repeat(4,1fr);">
+    ${statCard('Total Input Tokens', totalIn.toLocaleString(), 'ti-arrow-up', '', 'var(--blue-bg)', 'var(--blue)')}
+    ${statCard('Total Output Tokens', totalOut.toLocaleString(), 'ti-arrow-down', '', 'var(--amber-bg)', 'var(--amber)')}
+    ${statCard('Total Tokens Burned', (totalIn + totalOut).toLocaleString(), 'ti-flame', '', 'var(--purple-bg)', 'var(--purple)')}
+    ${statCard('Total Cost', totalCost > 0 ? '$' + totalCost.toFixed(4) : 'FREE', 'ti-coin', '', 'var(--green-bg)', 'var(--green)')}
+  </div>`;
+}
+
+/* ── Token Burn — Calculator Tab ────────────────────────── */
+function switchTokenTab(tab, btn) {
+  document.querySelectorAll('#token-tabs .tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('token-actual').style.display = tab === 'actual' ? 'block' : 'none';
+  document.getElementById('token-calc').style.display = tab === 'calc' ? 'block' : 'none';
+  if (tab === 'calc') { updateTokenCalc(); updateTokenCalcAnalysis(); }
+}
+
+function updateTokenCalc() {
+  const prov = document.getElementById('tc-provider').value;
+  const info = TOKEN_PRICING[prov];
+  const inText = document.getElementById('tc-input').value || '';
+  const outText = document.getElementById('tc-output').value || '';
+  const inTok = Math.floor(inText.length / 4);
+  const outTok = Math.floor(outText.length / 4);
+  const cost = estCost(prov, inTok, outTok);
+  const isFree = info.input_per_1m === 0 && info.output_per_1m === 0;
+
+  document.getElementById('tc-summary').innerHTML = `
+    <div class="card" style="padding:14px 18px;">
+      <div class="stat-icon-row">
+        <div class="stat-label">Provider</div>
+        <div class="stat-change" style="color:${info.color};font-size:13px;font-weight:600;">${info.label}</div>
+      </div>
+      <hr style="margin:10px 0;">
+      <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px;">
+        ${statCard('Input Tokens', inTok.toLocaleString(), 'ti-arrow-up', '', 'var(--bg)', 'var(--text-2)')}
+        ${statCard('Output Tokens', outTok.toLocaleString(), 'ti-arrow-down', '', 'var(--bg)', 'var(--text-2)')}
+        ${statCard('Total', (inTok + outTok).toLocaleString(), 'ti-sum', '', 'var(--bg)', 'var(--text-2)')}
+        ${statCard('Cost', isFree ? 'FREE' : '$' + cost.toFixed(8), 'ti-coin', '', isFree ? 'var(--green-bg)' : 'var(--blue-bg)', isFree ? 'var(--green)' : 'var(--blue)')}
+      </div>
+      ${!isFree && cost > 0 ? '<div style="font-size:11px;color:var(--text-3);margin-top:6px;">$' + cost.toFixed(6) + ' total &middot; $' + (cost * 1000).toFixed(4) + ' / 1K tokens</div>' : ''}
+    </div>`;
+}
+
+function updateTokenCalcAnalysis() {
+  const prov = document.getElementById('tc-provider').value;
+  const calls = parseInt(document.getElementById('tc-calls').value);
+  const indicators = parseInt(document.getElementById('tc-indicators').value);
+  const avgIn = parseInt(document.getElementById('tc-avg-in').value);
+  const avgOut = parseInt(document.getElementById('tc-avg-out').value);
+  const info = TOKEN_PRICING[prov];
+  const isFree = info.input_per_1m === 0 && info.output_per_1m === 0;
+
+  document.getElementById('tc-calls-val').textContent = calls;
+  document.getElementById('tc-indicators-val').textContent = indicators;
+  document.getElementById('tc-avg-in-val').textContent = avgIn.toLocaleString();
+  document.getElementById('tc-avg-out-val').textContent = avgOut.toLocaleString();
+
+  const totalCalls = calls * indicators;
+  const totalIn = totalCalls * avgIn;
+  const totalOut = totalCalls * avgOut;
+  const totalCost = estCost(prov, totalIn, totalOut);
+
+  document.getElementById('tc-analysis-metrics').innerHTML = `
+    ${statCard('Total LLM Calls', totalCalls.toLocaleString(), 'ti-cpu', '', 'var(--bg)', 'var(--text-2)')}
+    ${statCard('Total Input', totalIn.toLocaleString(), 'ti-arrow-up', '', 'var(--blue-bg)', 'var(--blue)')}
+    ${statCard('Total Output', totalOut.toLocaleString(), 'ti-arrow-down', '', 'var(--amber-bg)', 'var(--amber)')}
+    ${statCard('Est. Cost', isFree ? 'FREE' : '$' + totalCost.toFixed(4), 'ti-coin', '', isFree ? 'var(--green-bg)' : 'var(--purple-bg)', isFree ? 'var(--green)' : 'var(--purple)')}
+  `;
+}
+
+/* ── Countries ─────────────────────────────────────────── */
+async function loadCountries() {
+  const el = document.getElementById('countries-content');
+  if (!el) return;
+  el.innerHTML = '<div class="loading-overlay"><i class="ti ti-loader-2 spinner"></i><span>Loading countries…</span></div>';
+
+  const [data, err] = await apiGet('/api/v1/analysis/countries');
+  if (err) {
+    el.innerHTML = `<div class="error-box"><i class="ti ti-alert-triangle"></i><div>${err}</div></div>`;
+    return;
+  }
+  if (!data || data.length === 0) {
+    el.innerHTML = '<div class="info-box"><i class="ti ti-info-circle"></i><div>No countries have been analysed yet.</div></div>';
+    return;
+  }
+
+  el.innerHTML = `<div style="font-size:12px;color:var(--text-3);margin-bottom:10px;"><strong>${data.length}</strong> countries analysed</div>`;
+  el.innerHTML += data.map(c => `
+    <div class="card" style="padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:6px;">
+      <i class="ti ti-world" style="font-size:18px;color:var(--blue);"></i>
+      <span style="font-size:14px;font-weight:600;">${escH(c)}</span>
+    </div>
+  `).join('');
+}
+
+/* ── All Results ───────────────────────────────────────── */
+const AR_PAGE_SIZE = 50;
+let arOffset = 0;
+
+async function loadAllResults() {
+  const el = document.getElementById('all-results-content');
+  if (!el) return;
+  el.innerHTML = '<div class="loading-overlay"><i class="ti ti-loader-2 spinner"></i><span>Loading results…</span></div>';
+  arOffset = 0;
+  await fetchResultsPage();
+}
+
+async function fetchResultsPage() {
+  const el = document.getElementById('all-results-content');
+  const pagEl = document.getElementById('all-results-pagination');
+  if (!el) return;
+
+  el.innerHTML = '<div class="loading-overlay"><i class="ti ti-loader-2 spinner"></i><span>Loading results…</span></div>';
+
+  const [data, err] = await apiGet(`/api/v1/analysis/results/all?limit=${AR_PAGE_SIZE}&offset=${arOffset}`);
+  if (err) {
+    el.innerHTML = `<div class="error-box"><i class="ti ti-alert-triangle"></i><div>${err}</div></div>`;
+    return;
+  }
+  if (!data || data.length === 0) {
+    if (arOffset === 0) {
+      el.innerHTML = '<div class="info-box"><i class="ti ti-info-circle"></i><div>No results in the database yet.</div></div>';
+    } else {
+      el.innerHTML = '<div class="info-box"><i class="ti ti-info-circle"></i><div>No more results.</div></div>';
+      arOffset = Math.max(0, arOffset - AR_PAGE_SIZE);
+    }
+    pagEl.style.display = 'none';
+    return;
+  }
+
+  pagEl.style.display = 'flex';
+  document.getElementById('ar-range').textContent = `${arOffset + 1}–${arOffset + data.length}`;
+  document.getElementById('ar-prev').disabled = arOffset === 0;
+
+  const rows = data.map(r_ => {
+    const parts = (r_.indicator_id || '').split('.');
+    const suffix = parts.length > 1 ? parts.slice(1).join('.') : parts[0];
+    const rdtiiId = `P${r_.pillar_id || ''}-I${suffix}`;
+    const citation = (r_.article_citation || '');
+    const lawRef = citation ? citation.split(',')[0].trim() : '';
+    const confidence = r_.confidence != null ? (r_.confidence * 100).toFixed(0) + '%' : '';
+    return `<tr>
+      <td style="font-family:var(--mono);color:var(--accent);font-weight:500;">${r_.id != null ? r_.id : '—'}</td>
+      <td>${escH(r_.country || '')}</td>
+      <td>${escH((r_.act_and_practice || '—').slice(0,50))}</td>
+      <td>${escH(lawRef || '—')}</td>
+      <td>${escH(r_.coverage || 'N/A')}</td>
+      <td>${escH(rdtiiId)}</td>
+      <td>${escH(citation || '—')}</td>
+      <td><span class="pill ${r_.discovery_tag === 'KNOWN' ? 'pill-blue' : 'pill-amber'}">${escH(r_.discovery_tag || 'NEW')}</span></td>
+      <td>${escH((r_.verbatim_quote || '—').slice(0,80))}</td>
+      <td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;font-size:10px;">${escH((r_.references || '—').slice(0,50))}</td>
+      <td>${r_.raw_score != null ? r_.raw_score.toFixed(2) : ''}</td>
+      <td>${confidence}</td>
+    </tr>`;
+  }).join('');
+
+  el.innerHTML = `<div class="tbl-wrap"><table class="dt" style="font-size:11px;white-space:nowrap;">
+    <thead><tr>
+      <th>ID</th><th>Economy</th><th>Law Name</th><th>Law Number / Ref</th><th>Coverage</th>
+      <th>Indicator ID</th><th>Article / Section</th><th>Discovery Tag</th>
+      <th>Verbatim Snippet</th><th>Source URL</th><th>Score</th><th>Confidence</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
+}
+
+function arPrevPage() {
+  if (arOffset > 0) {
+    arOffset = Math.max(0, arOffset - AR_PAGE_SIZE);
+    fetchResultsPage();
+  }
+}
+
+function arNextPage() {
+  arOffset += AR_PAGE_SIZE;
+  fetchResultsPage();
+}
+
+/* ── Audit View ─────────────────────────────────────────── */
+async function showAudit(resultId) {
+  closeAudit();
+
+  const [data, err] = await apiGet(`/api/v1/analysis/audit/${resultId}`);
+  if (err || !data) { alert('Audit error: ' + err); return; }
+
+  const docsHtml = (data.source_documents || []).map(d =>
+    `<div class="ll"><span class="ll-ts">${escH(d.source_type)}</span><span class="ll-msg">${escH(d.url)}</span><span class="ll-ind">cer=${d.ocr_quality_cer ?? 0}</span></div>`
+  ).join('') || '<div style="color:var(--text-3);font-size:12px;">No source documents</div>';
+
+  const rs = data.raw_score;
+  const scorePill = rs != null
+    ? (rs >= 0.7 ? 'pill-green' : rs >= 0.4 ? 'pill-amber' : 'pill-red')
+    : 'pill-gray';
+
+  const html = `
+  <div class="modal-overlay" onclick="closeAudit()">
+    <div class="modal" onclick="event.stopPropagation()" style="max-width:720px;">
+      <div class="modal-head">
+        <div><i class="ti ti-eye" style="color:var(--blue);"></i> Audit #${resultId}: ${escH(data.indicator_id)}</div>
+        <button class="btn btn-ghost btn-sm" onclick="closeAudit()"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="modal-body" style="max-height:70vh;overflow-y:auto;">
+        <div class="detail-row"><span class="detail-label">Score</span><span class="pill ${scorePill}">${rs ?? '—'}</span></div>
+        <div class="detail-row"><span class="detail-label">Confidence</span><span>${data.confidence != null ? (data.confidence*100).toFixed(0) + '%' : '—'}</span></div>
+        <div class="detail-row"><span class="detail-label">Act / Practice</span><span>${escH(data.act_and_practice || '—')}</span></div>
+        <div class="detail-row"><span class="detail-label">Citation</span><span style="font-family:var(--mono);font-size:11px;">${escH(data.article_citation || '—')}</span></div>
+        <div class="detail-row"><span class="detail-label">Verbatim Quote</span><span style="background:var(--surface2);padding:8px 10px;border-radius:6px;font-size:12px;line-height:1.5;font-style:italic;">${escH(data.verbatim_quote || '—')}</span></div>
+        <div class="detail-row"><span class="detail-label">References</span><span style="font-size:11px;word-break:break-all;">${escH(data.references || '—')}</span></div>
+        <div class="detail-row"><span class="detail-label">Source Documents</span></div>
+        <div style="background:var(--log-bg);border:1px solid var(--border);border-radius:8px;padding:8px;font-size:11px;">${docsHtml}</div>
+      </div>
+    </div>
+  </div>`;
+
+  const m = document.createElement('div');
+  m.id = 'audit-modal';
+  m.innerHTML = html;
+  document.body.appendChild(m);
+}
+
+function closeAudit() {
+  const m = document.getElementById('audit-modal');
+  if (m) { m.remove(); }
+}
+
+/* ── Review Queue ───────────────────────────────────────── */
+async function loadReviewQueue() {
+  const [data, err] = await apiGet('/api/v1/analysis/review/queue?limit=50');
+  const el = document.getElementById('review-queue-list');
+  if (!el) return;
+  if (err || !data || data.length === 0) {
+    el.innerHTML = '<div class="info-box"><i class="ti ti-circle-check"></i><div>No items in review queue.</div></div>';
+    return;
+  }
+  el.innerHTML = data.map(item => {
+    const sc = item.raw_score != null ? Number(item.raw_score).toFixed(2) : '—';
+    const rid = item.result_id;
+    return `<div class="card" style="padding:12px 16px;margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div><strong>${escH(item.indicator_id)}</strong> · ${escH(item.country)} · <span class="pill pill-amber">${sc}</span> · <code style="font-size:11px;color:var(--text-3);">ID: ${rid}</code></div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:11px;color:var(--text-3);">${escH(item.reason)}</span>
+          <button class="btn btn-ghost btn-sm" onclick="showAudit(${rid})"><i class="ti ti-eye" style="font-size:13px;"></i> Audit</button>
+        </div>
+      </div>
+      <div style="margin-top:6px;font-size:12px;color:var(--text-2);">${escH(item.impact_comments || '').slice(0,120)}</div>
+      ${item.verbatim_quote ? `<div style="margin-top:4px;font-size:11px;font-style:italic;background:var(--surface2);padding:6px 8px;border-radius:4px;">${escH(item.verbatim_quote).slice(0,200)}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+/* ── Page navigation ───────────────────────────────────── */
+function navigateTo(name) {
+  document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+  const page = document.getElementById('page-' + name);
+  if (page) page.style.display = 'flex';
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  const btn = document.querySelector(`.nav-item[onclick*="${name}"]`);
+  if (btn) btn.classList.add('active');
+  document.querySelector('.main-wrap').scrollTop = 0;
+
+  if (name === 'queue') loadReviewQueue();
+  if (name === 'runs') { if (allRuns.length) renderRuns(allRuns, activeFilter); else loadRuns(); }
+  if (name === 'results') loadAllResults();
+  if (name === 'indicators') loadAllIndicators();
+  if (name === 'token') loadTokenActual();
+  if (name === 'countries') loadCountries();
+  if (name === 'logs') loadLiveLogs();
+  if (name === 'exports') loadExports();
+}
+
+/* ── All Indicators page ───────────────────────────────── */
+async function loadAllIndicators() {
+  const el = document.getElementById('all-indicators-content');
+  if (!el) return;
+  const [runs, err] = await apiGet('/api/v1/analysis/runs');
+  if (err) { el.innerHTML = `<div class="error-box"><i class="ti ti-alert-triangle"></i><div>${err}</div></div>`; return; }
+  const completed = (runs || []).filter(r => r.status === 'COMPLETE');
+  if (completed.length === 0) { el.innerHTML = '<div class="info-box"><i class="ti ti-info-circle"></i><div>No completed runs yet.</div></div>'; return; }
+
+  let allRows = [];
+  for (const run of completed) {
+    const [det, derr] = await apiGet(`/api/v1/analysis/${run.id}`);
+    if (derr || !det) continue;
+    for (const r of (det.indicator_results || [])) {
+      allRows.push({ run: run.country, ...r });
+    }
+  }
+  if (allRows.length === 0) { el.innerHTML = '<div class="info-box"><i class="ti ti-info-circle"></i><div>No indicator results found.</div></div>'; return; }
+
+  const tbl = allRows.map(r => {
+    const parts = (r.indicator_id || '').split('.');
+    const suffix = parts.length > 1 ? parts.slice(1).join('.') : parts[0];
+    const rdtiiId = `P${r.pillar_id}-I${suffix}`;
+    return `<tr>
+      <td style="font-family:var(--mono);color:var(--accent);font-weight:500;">${r.id != null ? r.id : '—'}</td>
+      <td>${escH(r.run)}</td>
+      <td>${escH(rdtiiId)}</td>
+      <td>${escH((r.act_and_practice || '—').slice(0,40))}</td>
+      <td>${r.confidence != null ? (r.confidence*100).toFixed(0) + '%' : ''}</td>
+      <td><span class="pill ${r.confidence >= 0.7 ? 'pill-green' : r.confidence >= 0.4 ? 'pill-amber' : 'pill-red'}">${r.raw_score ?? '—'}</span></td>
+      <td>${escH(r.discovery_tag || 'NEW')}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="showAudit(${r.id})"><i class="ti ti-eye" style="font-size:13px;"></i></button></td>
+    </tr>`;
+  }).join('');
+
+  el.innerHTML = `<div class="tbl-wrap"><table class="dt" style="font-size:11px;white-space:nowrap;">
+    <thead><tr><th>ID</th><th>Country</th><th>Indicator</th><th>Law</th><th>Confidence</th><th>Score</th><th>Tag</th><th></th></tr></thead>
+    <tbody>${tbl}</tbody></table>
+    <div style="font-size:11px;color:var(--text-3);padding:8px 12px;">${allRows.length} results across ${completed.length} runs</div>
+  </div>`;
+}
+
+/* ── Live Logs page ────────────────────────────────────── */
+async function loadLiveLogs() {
+  const el = document.getElementById('live-logs-content');
+  if (!el) return;
+  const [runs, err] = await apiGet('/api/v1/analysis/runs');
+  if (err) { el.innerHTML = `<div class="error-box"><i class="ti ti-alert-triangle"></i><div>${err}</div></div>`; return; }
+  const active = (runs || []).filter(r => ['DISCOVERING','ANALYSING','RUNNING'].includes(r.status));
+  if (active.length === 0) { el.innerHTML = '<div class="info-box"><i class="ti ti-info-circle"></i><div>No active runs. Start an analysis to see live logs.</div></div>'; return; }
+
+  let allEvents = [];
+  for (const run of active) {
+    const [data, derr] = await apiGet(`/api/v1/analysis/${run.id}/events?offset=0&limit=30`);
+    if (derr || !data || !data.events) continue;
+    for (const ev of data.events) {
+      allEvents.push({ ...ev, _country: run.country });
+    }
+  }
+  allEvents.sort((a, b) => (a.created_at || '').localeCompare(b.created_at || ''));
+
+  if (allEvents.length === 0) { el.innerHTML = '<div class="info-box"><i class="ti ti-info-circle"></i><div>No events yet.</div></div>'; return; }
+
+  const ICONS = { SEARCH:'ti-search', CLASSIFY:'ti-tag', DOWNLOAD:'ti-download', ZONE1:'ti-circle-check', CHUNK:'ti-file-text', EMBED:'ti-brain', PROSECUTION:'ti-gavel', DEFENSE:'ti-shield', ARBITER:'ti-scale', INDICATOR:'ti-chart-bar', STATUS:'ti-info-circle', ERROR:'ti-alert-triangle' };
+  const lines = allEvents.map(ev => {
+    const ts = (ev.created_at || '').slice(11,19);
+    const tag = (ev.event_type || '').replace(/_DONE$/,'').replace(/_START$/,'');
+    const icon = ICONS[tag] || 'ti-point';
+    return `<div class="ll"><span class="ll-ts">${ts}</span><i class="ti ${icon} ll-icon"></i><span class="ll-agent" style="color:var(--amber);">${escH(ev._country)}</span><span class="ll-agent">${escH(ev.agent || '')}</span><span class="ll-ind">${escH(ev.indicator_id || '')}</span><span class="ll-msg">${escH((ev.message || '').slice(0,100))}</span></div>`;
+  }).join('');
+
+  el.innerHTML = `<div class="log-box" style="max-height:60vh;">${lines}</div>`;
+}
+
+/* ── Download export (All Results) ──────────────────────── */
+function downloadExport(format) {
+  const iframe = document.createElement('iframe');
+  iframe.style.display = 'none';
+  iframe.src = `${EXPORT_BASE}/api/v1/analysis/export/all?format=${format}`;
+  document.body.appendChild(iframe);
+  setTimeout(() => iframe.remove(), 60000);
+}
+
+/* ── Exports page ──────────────────────────────────────── */
+async function loadExports() {
+  const el = document.getElementById('exports-content');
+  if (!el) return;
+  const [runs, err] = await apiGet('/api/v1/analysis/runs');
+  if (err) { el.innerHTML = `<div class="error-box"><i class="ti ti-alert-triangle"></i><div>${err}</div></div>`; return; }
+  const completed = (runs || []).filter(r => r.status === 'COMPLETE');
+  if (completed.length === 0) { el.innerHTML = '<div class="info-box"><i class="ti ti-info-circle"></i><div>No completed runs to export.</div></div>'; return; }
+
+  const rows = completed.map(r => `
+    <div class="card" style="padding:14px 18px;margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div><strong>${escH(r.country)}</strong> · <code style="font-size:11px;color:var(--text-3);">${r.id.slice(0,8)}…</code> · ${r.completed_indicators || 0} indicators</div>
+        <div style="display:flex;gap:6px;">
+          <a class="export-link" href="${EXPORT_BASE}/api/v1/analysis/${r.id}/export?format=json" target="_blank"><i class="ti ti-file-type-json"></i> JSON</a>
+          <a class="export-link" href="${EXPORT_BASE}/api/v1/analysis/${r.id}/export?format=csv" target="_blank"><i class="ti ti-file-type-csv"></i> CSV</a>
+          <a class="export-link" href="${EXPORT_BASE}/api/v1/analysis/${r.id}/export?format=rdtii_flat_csv" target="_blank"><i class="ti ti-file-spreadsheet"></i> CSV (Flat)</a>
+          <a class="export-link" href="${EXPORT_BASE}/api/v1/analysis/${r.id}/export?format=excel" target="_blank"><i class="ti ti-table"></i> Excel</a>
+        </div>
+      </div>
+    </div>`).join('');
+
+  const header = `<div class="card" style="padding:14px 18px;margin-bottom:12px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div><strong>Export All Results</strong><br><span style="font-size:11px;color:var(--text-3);">Download aggregated results across all runs</span></div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-ghost btn-sm" onclick="downloadExport('csv')"><i class="ti ti-file-type-csv"></i> CSV</button>
+        <button class="btn btn-ghost btn-sm" onclick="downloadExport('json')"><i class="ti ti-file-type-json"></i> JSON</button>
+        <button class="btn btn-ghost btn-sm" onclick="downloadExport('excel')"><i class="ti ti-table"></i> Excel</button>
+      </div>
+    </div>
+  </div>`;
+
+  el.innerHTML = `${header}<div style="margin-bottom:12px;font-size:12px;color:var(--text-3);">${completed.length} completed runs available for export</div>${rows}`;
+}
+
+/* ── Audit page ────────────────────────────────────────── */
+async function loadAuditPage() {
+  const input = document.getElementById('audit-input');
+  const id = parseInt(input.value, 10);
+  if (!id) { input.focus(); return; }
+  const el = document.getElementById('audit-result');
+  el.innerHTML = '<div class="loading-overlay" style="padding:20px;"><i class="ti ti-loader-2 spinner"></i><span>Loading audit…</span></div>';
+
+  const [data, err] = await apiGet(`/api/v1/analysis/audit/${id}`);
+  if (err || !data) {
+    el.innerHTML = `<div class="error-box"><i class="ti ti-alert-triangle"></i><div>Audit error: ${err || 'Not found'}</div></div>`;
+    return;
+  }
+
+  const rs = data.raw_score;
+  const scorePill = rs != null ? (rs >= 0.7 ? 'pill-green' : rs >= 0.4 ? 'pill-amber' : 'pill-red') : 'pill-gray';
+  const docsHtml = (data.source_documents || []).map(d =>
+    `<div class="ll"><span class="ll-ts">${escH(d.source_type)}</span><span class="ll-msg">${escH(d.url)}</span><span class="ll-ind">cer=${d.ocr_quality_cer ?? 0}</span></div>`
+  ).join('') || '<div style="color:var(--text-3);font-size:12px;">No source documents</div>';
+
+  el.innerHTML = `<div class="card" style="margin-top:16px;">
+    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;">
+      <span><strong>Result ID:</strong> ${data.result_id}</span>
+      <span><strong>Indicator:</strong> ${escH(data.indicator_id)}</span>
+      <span><strong>Country:</strong> ${escH(data.country)}</span>
+      <span><span class="pill ${scorePill}">${rs ?? '—'}</span></span>
+    </div>
+    <div class="detail-row"><span class="detail-label">Act / Practice</span><span>${escH(data.act_and_practice || '—')}</span></div>
+    <div class="detail-row"><span class="detail-label">Citation</span><span style="font-family:var(--mono);font-size:12px;">${escH(data.article_citation || '—')}</span></div>
+    <div class="detail-row"><span class="detail-label">Verbatim Quote</span><span style="background:var(--surface2);padding:10px;border-radius:6px;font-style:italic;">${escH(data.verbatim_quote || '—')}</span></div>
+    <div class="detail-row"><span class="detail-label">References</span><span style="font-size:12px;word-break:break-all;">${escH(data.references || '—')}</span></div>
+    <div class="detail-row"><span class="detail-label">Source Documents</span></div>
+    <div style="background:var(--log-bg);border:1px solid var(--border);border-radius:8px;padding:8px;font-size:12px;">${docsHtml}</div>
+  </div>`;
+}
+
+/* ── Init ──────────────────────────────────────────────── */
+navigateTo('dashboard');
+fullRefresh();
+
+
+
+// Fallback: if runs don't load within 20s, show a message
+setTimeout(() => {
+  const el = document.getElementById('runs-list');
+  if (el && el.querySelector('.loading-overlay')) {
+    el.innerHTML = `<div class="error-box"><i class="ti ti-alert-triangle"></i><div>Still loading… <a href="javascript:fullRefresh()">Click to retry</a> or check the <a href="${API_BASE}/docs" target="_blank">API docs</a>.</div></div>`;
+  }
+}, 20000);
+</script>
+
+<!-- ── Audit modal styles ────────────────────────────────── -->
+<style>
+.modal-overlay {
+  position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:999;
+  display:flex;align-items:center;justify-content:center;
+}
+.modal {
+  background:var(--surface);border:1px solid var(--border-med);border-radius:12px;
+  width:90%;max-width:640px;
+}
+.modal-head {
+  display:flex;justify-content:space-between;align-items:center;
+  padding:16px 20px;border-bottom:1px solid var(--border);
+  font-weight:600;font-size:14px;
+}
+.modal-body { padding:16px 20px; }
+.detail-row {
+  display:flex;flex-direction:column;gap:4px;
+  margin-bottom:12px;font-size:13px;
+}
+.detail-label { font-weight:600;font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.05em; }
+</style>
+
+</body>
+</html>

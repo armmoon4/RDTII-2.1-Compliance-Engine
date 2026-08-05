@@ -1,0 +1,68 @@
+# ─── RDTII 2.1 Compliance Engine — Country Configuration ─────────────────────
+# Per-country legal portal registry, keyword overrides, and language settings.
+# Used by Module 1 (Document Discovery) query generation.
+
+countries:
+
+  Malaysia:
+    iso: "MY"
+    legal_system: "common"
+    language: "ms"
+    supported_countries_entry: "Malaysia"
+    legislation_portal: "agc.gov.my"
+    gazette_portal: "federalgazette.agc.gov.my"
+    ict_regulator_portal: "pdpcommissioner.gov.my"
+    additional_portals:
+      - "mcmc.gov.my"
+      - "bnm.gov.my"
+      - "sc.com.my"
+    known_regulators:
+      - "MCMC"
+      - "Bank Negara Malaysia"
+      - "Securities Commission Malaysia"
+      - "MDEC"
+    local_keywords:
+      data_transfer_ban: "larangan pemindahan data"
+      data_protection: "perlindungan data peribadi"
+      cybersecurity: "keselamatan siber"
+
+  Singapore:
+    iso: "SG"
+    legal_system: "common"
+    language: "en"
+    supported_countries_entry: "Singapore"
+    legislation_portal: "sso.agc.gov.sg"
+    gazette_portal: "egazette.agc.gov.sg"
+    ict_regulator_portal: "pdpc.gov.sg"
+    additional_portals:
+      - "csa.gov.sg"
+      - "imda.gov.sg"
+      - "mas.gov.sg"
+    known_regulators:
+      - "PDPC"
+      - "CSA"
+      - "IMDA"
+      - "MAS"
+      - "ACRA"
+    local_keywords: {}  # English-only economy
+
+  Australia:
+    iso: "AU"
+    legal_system: "common"
+    language: "en"
+    supported_countries_entry: "Australia"
+    legislation_portal: "legislation.gov.au"
+    gazette_portal: "legislation.gov.au/gazettes"
+    ict_regulator_portal: "oaic.gov.au"
+    additional_portals:
+      - "acsc.gov.au"
+      - "acma.gov.au"
+      - "apra.gov.au"
+      - "accc.gov.au"
+    known_regulators:
+      - "OAIC"
+      - "ACSC"
+      - "ACMA"
+      - "APRA"
+      - "ASIC"
+    local_keywords: {}  # English-only economy

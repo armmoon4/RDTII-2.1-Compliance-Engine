@@ -1,0 +1,87 @@
+# ─── RDTII 2.1 Compliance Engine — Runtime Configuration ─────────────────────
+# Edit these values to switch AI providers or tune analysis behaviour.
+# Environment variable overrides (from .env) always take precedence.
+
+ai:
+  # Primary provider: "gemini" | "ollama"
+  provider: "gemini"
+
+  # Google Gemini model (used when provider = gemini)
+  gemini_model: "gemini-1.5-flash"
+
+  # Ollama model name (used when provider = ollama or Gemini key is absent)
+  ollama_model: "llama3.1"
+  ollama_base_url: "http://localhost:11434"
+
+  # LLM generation parameters
+  temperature: 0.1
+  max_output_tokens: 2048
+
+
+analysis:
+  # Maximum chunks retrieved per indicator from ChromaDB
+  top_k_chunks: 100
+
+  # Minimum confidence below which a result is flagged for human review
+  low_confidence_threshold: 0.4
+
+  # Score snap tolerance — if AI score is within this of a valid score, snap it
+  score_snap_tolerance: 0.05
+
+  # Max document text size to send through chunker (chars)
+  max_text_chars: 500000
+
+
+discovery:
+  max_search_results_per_query: 10
+  max_queries_per_indicator: 7
+  download_timeout_seconds: 30
+  max_document_size_mb: 50
+
+  # Minimum primary-source URLs before skipping fallback queries (Q6, Q7)
+  min_primary_threshold: 2
+
+  # Seconds to wait between DuckDuckGo queries (rate limiting)
+  search_rate_limit_seconds: 1.0
+
+
+scoring:
+  # Score direction note (from RDTII spec §5):
+  # Higher score = MORE restriction = HIGHER compliance cost.
+  # Exception: 7.1, 7.2, 8.1, 8.2, 9.1, 12.9 — absence of framework = HIGHER score.
+  # NOTE: Inversion is already encoded in SCORE_CRITERIA definitions in
+  # scoring_engine.py (e.g. no_framework=1.0, comprehensive_framework=0.0).
+  # The apply_inverted_score() utility exists for non-criteria score paths.
+  inverted_indicators:
+    - "7.1"
+    - "7.2"
+    - "8.1"
+    - "8.2"
+    - "9.1"
+    - "12.9"
+
+
+database:
+  pool_size: 10
+  max_overflow: 20
+  echo_sql: false
+
+
+vector_store:
+  chroma_db_path: "./chroma_db"
+  embedding_model: "all-MiniLM-L6-v2"
+  collection_cleanup_after_run: true
+
+
+export:
+  # Default columns in CSV/Excel exports (must match 9-column RDTII spec §2.1)
+  columns:
+    - pillar_id
+    - indicator_id
+    - raw_score
+    - act_and_practice
+    - coverage
+    - impact_comments
+    - timeframe
+    - references
+    - note
